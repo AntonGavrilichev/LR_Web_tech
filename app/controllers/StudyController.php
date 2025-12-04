@@ -6,8 +6,8 @@ class StudyController extends Controller {
         $data = [
             'title' => 'Учеба',
             'pageTitle' => 'Персональный сайт - Учеба',
-            'university' => 'Национальный исследовательский университет "МЭИ"',
-            'department' => 'Кафедра информационных систем',
+            'university' => 'Севастопольский государственный университет',
+            'department' => 'Кафедра информационных систем и технологий',
             'subjects' => $this->model->getSubjects()
         ];
 

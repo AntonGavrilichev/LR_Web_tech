@@ -4,10 +4,9 @@ class MainController extends Controller {
         $data = [
             'title' => 'Главная страница',
             'pageTitle' => 'Персональный сайт - Главная страница',
-            'fullName' => 'Иванов Иван Иванович',
-            'group' => 'ИС-21',
-            'labWork' => 'Лабораторная работа №8: Разработка MVC приложения на PHP',
-            'photo' => 'photos/profile-img.jpg'
+            'fullName' => 'Гавриличев Антон Александрович',
+            'group' => 'ИСб-22-1-з',
+            'photo' => 'photos/SevSu.jpg'
         ];
 
         $this->view->render('main/index', $data);

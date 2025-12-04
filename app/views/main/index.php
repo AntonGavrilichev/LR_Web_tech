@@ -3,9 +3,10 @@
 <div class="profile">
     <img src="<?= $photo ?? 'https://via.placeholder.com/200' ?>" alt="Фото профиля" class="profile-img">
     <div class="profile-info">
-        <h2><?= htmlspecialchars($fullName ?? 'Иванов Иван Иванович') ?></h2>
-        <p><strong>Группа:</strong> <?= htmlspecialchars($group ?? 'ИС-21') ?></p>
-        <p><strong>Лабораторная работа:</strong> <?= htmlspecialchars($labWork ?? 'Лабораторная работа №8: Разработка MVC приложения на PHP') ?></p>
-        <p>Добро пожаловать на мой персональный сайт! Этот сайт разработан в рамках лабораторной работы по веб-технологиям с использованием архитектуры MVC на PHP.</p>
+        <h2><?= htmlspecialchars($fullName ?? 'Гавриличев Антон Александрович') ?></h2>
+        <p><strong>Группа:</strong> <?= htmlspecialchars($group ?? 'ИС/22-1-з') ?></p>
+        <p><strong>Лабораторная работа:</strong> <?= htmlspecialchars($labWork ?? 'Лабораторная работа №8: Исследование архитектуры MVC приложения и возможностей
+обработки данных HTML-форм на стороне сервера с использованием языка PHP') ?></p>
+        <p>Добро пожаловать на мой персональный сайт!</p>
     </div>
 </div>

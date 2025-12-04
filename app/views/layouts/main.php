@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= isset($pageTitle) ? htmlspecialchars($pageTitle) : 'Персональный сайт' ?></title>
     <style>
-        /* ВСЕ СТИЛИ ИЗ ПРЕДЫДУЩЕГО КОДА - КОПИРУЙТЕ ИХ СЮДА ПОЛНОСТЬЮ */
+
         * {
             margin: 0;
             padding: 0;

@@ -126,17 +126,10 @@ class PhotoGallery {
         const photo = this.photos[this.currentIndex];
         const photoPath = this.photosDir + photo.filename;
 
-        try {
-            // Проверяем существует ли файл
-            const response = await fetch(photoPath);
-            if (!response.ok) throw new Error('File not found');
+        const response = await fetch(photoPath);
+        if (!response.ok) throw new Error('File not found');
+        document.getElementById('modalImage').src = photoPath;
 
-            document.getElementById('modalImage').src = photoPath;
-        } catch (error) {
-            // Используем заглушку если файл не найден
-            document.getElementById('modalImage').src =
-                'https://via.placeholder.com/800x600/667eea/ffffff?text=' + encodeURIComponent(photo.name);
-        }
 
         document.getElementById('modalTitle').textContent = photo.name;
         document.getElementById('modalDescription').textContent = photo.description;
@@ -145,7 +138,6 @@ class PhotoGallery {
     }
 }
 
-// Инициализация глобально
 let gallery = null;
 
 function initGallery(photos, photosDir) {
