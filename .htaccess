@@ -1,9 +1,16 @@
+# .htaccess в корне проекта
 RewriteEngine On
-RewriteBase /
 
-# Если файл или папка существуют - используем их напрямую
-RewriteCond %{REQUEST_FILENAME} !-f
-RewriteCond %{REQUEST_FILENAME} !-d
+# Разрешаем доступ к реальным файлам
+<IfModule mod_rewrite.c>
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^(.*)$ index.php?url=$1 [L,QSA]
+</IfModule>
 
-# Все остальное перенаправляем на index.php
-RewriteRule ^(.*)$ index.php?url=$1 [L,QSA]
+# Разрешаем доступ к папке photos
+<IfModule mod_headers.c>
+    <FilesMatch "\.(jpg|jpeg|png|gif|webp)$">
+        Header set Cache-Control "public, max-age=31536000"
+    </FilesMatch>
+</IfModule>

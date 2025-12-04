@@ -1,7 +1,7 @@
 <?php
 class FormValidation {
     protected $rules = [];
-    protected $errors = [];
+    public $errors = []; // Изменено на public
 
     public function isNotEmpty($data) {
         return empty(trim($data)) ? "Поле не может быть пустым" : null;
@@ -26,6 +26,9 @@ class FormValidation {
     }
 
     public function isEmail($data) {
+        if (empty(trim($data))) {
+            return "Email не может быть пустым";
+        }
         return !filter_var($data, FILTER_VALIDATE_EMAIL) ? "Некорректный email адрес" : null;
     }
 
