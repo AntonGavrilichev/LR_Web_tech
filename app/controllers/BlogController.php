@@ -129,7 +129,10 @@ class BlogController extends Controller {
             $_SESSION['error_message'] = 'Ошибка: ' . $e->getMessage();
         }
 
-        header('Location: /blog');
+        // Редирект обратно на страницу, откуда пришли
+        $redirect = $_GET['redirect'] ?? 'blog';
+        $pageParam = isset($_GET['page']) ? '?page=' . $_GET['page'] : '';
+        header('Location: /' . $redirect . $pageParam);
         exit;
     }
 
@@ -188,6 +191,31 @@ class BlogController extends Controller {
         }
 
         return false;
+    }
+    // Добавьте этот метод в класс BlogController
+    public function posts() {
+        // Загружаем модель
+        $this->loadModel('BlogModel');
+
+        // Получаем номер страницы
+        $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+        if ($page < 1) $page = 1;
+
+        // Получаем данные
+        $blogData = $this->model->getPosts($page);
+
+        // Подготавливаем данные для представления
+        $data = [
+            'title' => 'Записи блога',
+            'pageTitle' => 'Персональный сайт - Записи блога',
+            'posts' => $blogData['posts'],
+            'page' => $blogData['page'],
+            'totalPages' => $blogData['totalPages'],
+            'total' => $blogData['total']
+        ];
+
+        // Рендерим представление для записей
+        $this->view->render('blog/posts', $data);
     }
 }
 ?>

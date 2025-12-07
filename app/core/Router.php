@@ -15,9 +15,10 @@ class Router {
         'upload/downloadCurrent' => ['controller' => 'UploadController', 'action' => 'downloadCurrent'],
         'upload/downloadBackup/(:any)' => ['controller' => 'UploadController', 'action' => 'downloadBackup'],
         'upload/restoreBackup/(:any)' => ['controller' => 'UploadController', 'action' => 'restoreBackup'],
-        'blog' => ['controller' => 'BlogController', 'action' => 'index'],
+        'blog' => ['controller' => 'BlogController', 'action' => 'index'], // Редактор блога
         'blog/add' => ['controller' => 'BlogController', 'action' => 'add', 'method' => 'POST'],
         'blog/delete' => ['controller' => 'BlogController', 'action' => 'delete'],
+        'posts' => ['controller' => 'BlogController', 'action' => 'posts'], // Исправлено: отдельное действие для просмотра записей
     ];
 
     public function route($url) {

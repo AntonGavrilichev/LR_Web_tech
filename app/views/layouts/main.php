@@ -351,7 +351,13 @@
                         <li><a href="/upload">Загрузка сообщений</a></li>
                     </ul>
                 </li>
-                <li><a href="/blog">Блог</a></li>
+                <li class="dropdown">
+                    <a href="/blog" class="dropdown-toggle">Блог</a>
+                    <ul class="dropdown-menu">
+                        <li><a href="/blog">Редактор блога</a></li>
+                        <li><a href="/posts">Записи блога</a></li>
+                    </ul>
+                </li>
             </ul>
         </nav>
     </header>
