@@ -89,7 +89,7 @@ class UploadModel extends Model {
             $lines = file($this->targetFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
             $info['lines'] = count($lines);
 
-            // Подсчет валидных сообщений
+            // Подсчет сообщений
             foreach ($lines as $line) {
                 if (count(explode(';', $line)) >= 6) {
                     $info['messages_count']++;

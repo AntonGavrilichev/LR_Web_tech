@@ -41,7 +41,7 @@ class ResultsVerification extends CustomFormValidation {
 
         $db = Database::getConnection();
 
-        // Преобразуем детализированные результаты в формат для БД
+        // Преобразуем результаты в формат для БД
         $allCorrect = true;
         foreach ($results['details'] as $detail) {
             if (!$detail['is_correct']) {

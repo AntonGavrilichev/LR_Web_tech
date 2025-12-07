@@ -192,7 +192,7 @@ class BlogController extends Controller {
 
         return false;
     }
-    // Добавьте этот метод в класс BlogController
+
     public function posts() {
         // Загружаем модель
         $this->loadModel('BlogModel');
@@ -286,7 +286,7 @@ class BlogController extends Controller {
             return $result;
         }
 
-        // Проверка MIME типа
+
         $allowedMimeTypes = ['text/csv', 'text/plain', 'application/csv', 'text/comma-separated-values'];
         $finfo = finfo_open(FILEINFO_MIME_TYPE);
         $mimeType = finfo_file($finfo, $file['tmp_name']);

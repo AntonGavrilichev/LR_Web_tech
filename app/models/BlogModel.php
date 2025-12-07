@@ -12,7 +12,6 @@ class BlogModel
     private function connectDB()
     {
         try {
-            // Используем настройки из вашего проекта
             $host = 'localhost';
             $port = '3307';
             $dbname = 'lab9_db';
@@ -25,7 +24,6 @@ class BlogModel
             $this->db->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
 
         } catch (PDOException $e) {
-            // Используем стиль ошибок как в вашем проекте
             die("<div style='padding: 20px; background: #f8d7da; border: 1px solid #f5c6cb; border-radius: 5px;'>
                     <h3 style='color: #721c24;'>Ошибка подключения к БД</h3>
                     <p style='color: #721c24;'>" . htmlspecialchars($e->getMessage()) . "</p>

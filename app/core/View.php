@@ -21,8 +21,6 @@ class View {
 
         // Извлекаем переменные для шаблона
         extract($this->data);
-
-        // Начинаем буферизацию для контента
         ob_start();
         include 'app/views/' . $template . '.php';
         $content = ob_get_clean();

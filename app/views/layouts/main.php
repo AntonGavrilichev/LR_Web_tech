@@ -365,7 +365,6 @@
 
     <main>
         <?php
-        // ВЫВОДИМ КОНТЕНТ
         if (isset($content)) {
             echo $content;
         } else {

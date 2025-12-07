@@ -65,7 +65,7 @@ class FormValidation {
         }
     }
 
-    // НОВЫЕ МЕТОДЫ ДЛЯ БЛОГА
+
     // Метод для проверки блога
     public function validateBlogPost($data, $files = []) {
         $this->errors = [];
@@ -119,7 +119,7 @@ class FormValidation {
         return true;
     }
 
-    // Показать ошибки в стиле вашего проекта
+    // Показать ошибки
     public function showBlogErrors() {
         if (!empty($this->errors)) {
             echo '<div class="error-messages" style="background: #f8d7da; padding: 15px; border-radius: 5px; margin: 15px 0;">';
