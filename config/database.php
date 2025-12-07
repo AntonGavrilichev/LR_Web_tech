@@ -3,7 +3,7 @@ define('DB_HOST', 'localhost');
 define('DB_PORT', '3307');
 define('DB_NAME', 'lab9_db');
 define('DB_USER', 'root');
-define('DB_PASS', 'your_password'); // замените на ваш пароль
+define('DB_PASS', '');
 
 class Database {
     private static $connection = null;

@@ -101,4 +101,11 @@
         <button type="submit" class="btn btn-primary">Отправить тест</button>
         <button type="reset" class="btn btn-secondary">Очистить форму</button>
     </div>
+    <div style="text-align: center; margin-top: 40px; padding-top: 20px; border-top: 1px solid #ddd;">
+        <p>
+            <a href="/test/results" style="color: #667eea; text-decoration: none; font-weight: bold; padding: 10px 20px; border: 2px solid #667eea; border-radius: 5px;">
+                📊 Администратору: просмотреть все результаты тестирования
+            </a>
+        </p>
+    </div>
 </form>

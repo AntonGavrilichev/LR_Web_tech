@@ -27,9 +27,8 @@ $results = TestResult::findAll('created_at DESC');
 </head>
 <body>
 <form method="POST">
-    <!-- Ваши вопросы теста из ЛР8 -->
+
     <input type="text" name="full_name" placeholder="ФИО" required>
-    <!-- ... вопросы ... -->
     <button type="submit">Отправить</button>
 </form>
 

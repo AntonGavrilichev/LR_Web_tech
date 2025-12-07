@@ -8,6 +8,7 @@ class Router {
         'album' => ['controller' => 'AlbumController', 'action' => 'index'],
         'contact' => ['controller' => 'ContactController', 'action' => 'index'],
         'test' => ['controller' => 'TestController', 'action' => 'index'],
+        'test/results' => ['controller' => 'TestController', 'action' => 'viewResults'],
         'guestbook' => ['controller' => 'GuestbookController', 'action' => 'index'],
         'upload' => ['controller' => 'UploadController', 'action' => 'index'],
         'upload/upload' => ['controller' => 'UploadController', 'action' => 'upload', 'method' => 'POST'],

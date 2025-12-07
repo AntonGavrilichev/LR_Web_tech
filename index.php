@@ -1,5 +1,5 @@
 <?php
-// index.php
+
 session_start();
 
 // Включаем отображение ошибок

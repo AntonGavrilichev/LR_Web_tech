@@ -22,7 +22,10 @@ class TestController extends Controller {
                 // Проверяем ответы
                 $results = $validator->checkAnswers($_POST);
 
-                // Формируем сообщение с результатами для "отправки на email"
+                // Сохраняем в базу данных
+                $validator->saveToDatabase($_POST['full_name'], $_POST, $results);
+
+                // Формируем сообщение с результатами
                 $this->saveTestResults($_POST, $results);
 
             } else {
@@ -43,6 +46,52 @@ class TestController extends Controller {
         ];
 
         $this->view->render('test/index', $data);
+    }
+
+    public function viewResults() {
+        require_once 'config/database.php';
+
+        $db = Database::getConnection();
+
+        try {
+            $stmt = $db->query("SELECT * FROM test_results ORDER BY created_at DESC");
+            $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            // Преобразуем JSON данные обратно в массив для удобного отображения
+            foreach ($results as &$result) {
+                $result['user_answers_array'] = json_decode($result['user_answers'], true);
+                $result['correct_answers_array'] = json_decode($result['correct_answers'], true);
+                $result['created_at_formatted'] = date('d.m.Y H:i', strtotime($result['created_at']));
+            }
+        } catch (PDOException $e) {
+            $results = [];
+            $error = "Ошибка при получении данных: " . $e->getMessage();
+        }
+
+        // Передаем функцию getAnswerText как замыкание
+        $getAnswerText = function($questionNum, $answerCode) {
+            return $this->getAnswerText($questionNum, $answerCode);
+        };
+
+        $data = [
+            'title' => 'Результаты тестирования',
+            'pageTitle' => 'Просмотр результатов теста',
+            'results' => $results,
+            'error' => $error ?? null,
+            'getAnswerText' => $getAnswerText->bindTo($this) // Привязываем контекст
+        ];
+
+        $this->view->render('test/results', $data);
+        require_once 'app/helpers/testHelper.php';
+
+        $data = [
+            'title' => 'Результаты тестирования',
+            'pageTitle' => 'Просмотр результатов теста',
+            'results' => $results,
+            'error' => $error ?? null
+        ];
+
+        $this->view->render('test/results', $data);
     }
 
     private function saveTestResults($postData, $results) {
@@ -120,7 +169,7 @@ class TestController extends Controller {
         return 'Неудовлетворительно (2)';
     }
 
-    private function getAnswerText($questionNum, $answerCode) {
+    public function getAnswerText($questionNum, $answerCode) {
         $answers = [
             1 => [
                 '1' => 'Численная мера возможности наступления события',
