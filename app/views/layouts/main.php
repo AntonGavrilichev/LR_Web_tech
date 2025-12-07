@@ -279,6 +279,57 @@
                 padding: 15px;
             }
         }
+        /* Стили для выпадающего меню */
+        nav ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            gap: 20px;
+        }
+
+        .dropdown {
+            position: relative;
+        }
+
+        .dropdown-menu {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background: white;
+            min-width: 200px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border-radius: 5px;
+            z-index: 1000;
+            padding: 10px 0;
+        }
+
+        .dropdown:hover .dropdown-menu {
+            display: block;
+        }
+
+        .dropdown-menu li {
+            margin: 0;
+        }
+
+        .dropdown-menu a {
+            display: block;
+            padding: 8px 20px;
+            color: #333;
+            text-decoration: none;
+            transition: background 0.3s;
+        }
+
+        .dropdown-menu a:hover {
+            background: #f8f9fa;
+            color: #667eea;
+        }
+
+        .dropdown-toggle::after {
+            content: " ▼";
+            font-size: 0.8em;
+        }
     </style>
 </head>
 <body>
@@ -293,8 +344,14 @@
                 <li><a href="/album">Фотоальбом</a></li>
                 <li><a href="/contact">Контакт</a></li>
                 <li><a href="/test">Тест</a></li>
-                <li><a href="/guestbook">Гостевая книга</a></li>
-                <li><a href="/upload">Загрузка сообщений гостевой книги</a></li>
+                <li class="dropdown">
+                    <a href="/guestbook" class="dropdown-toggle">Гостевая книга</a>
+                    <ul class="dropdown-menu">
+                        <li><a href="/guestbook">Просмотр сообщений</a></li>
+                        <li><a href="/upload">Загрузка сообщений</a></li>
+                    </ul>
+                </li>
+                <li><a href="/blog">Блог</a></li>
             </ul>
         </nav>
     </header>

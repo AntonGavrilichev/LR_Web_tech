@@ -1,6 +1,6 @@
 <?php
 require_once '../config/database.php';
-require_once '../app/models/BlogPost.php';
+require_once '../app/models/BlogModel.php';
 require_once '../validation/FormValidation.php'; // Из ЛР8
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['csv_file'])) {

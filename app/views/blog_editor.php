@@ -1,6 +1,6 @@
 <?php
 require_once '../config/database.php';
-require_once '../app/models/BlogPost.php';
+require_once '../app/models/BlogModel.php';
 require_once '../app/core/Paginator.php';
 
 // Добавление записи
@@ -14,7 +14,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $imagePath = 'uploads/' . $filename;
     }
 
-    $post = new BlogPost([
+    $post = new BlogModel([
         'title' => $_POST['title'],
         'image_path' => $imagePath,
         'content' => $_POST['content']
@@ -27,7 +27,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 // Пагинация
 $page = $_GET['page'] ?? 1;
-$paginated = BlogPost::paginate($page, Paginator::PER_PAGE, 'created_at DESC');
+$paginated = BlogModel::paginate($page, Paginator::PER_PAGE, 'created_at DESC');
 $paginationHtml = Paginator::generate($page, $paginated['total_pages'], '?page=');
 ?>
 <!DOCTYPE html>

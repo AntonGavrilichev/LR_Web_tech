@@ -37,6 +37,7 @@
         .header h1 {
             font-size: 2.5rem;
             margin-bottom: 10px;
+            color: white;
         }
 
         .header p {
@@ -223,7 +224,6 @@
                 </thead>
                 <tbody>
                 <?php
-                // Создаем вспомогательную функцию прямо в шаблоне
                 function getAnswerTextTemplate($questionNum, $answerCode) {
                     $answers = [
                             1 => [

@@ -1,10 +1,10 @@
 <?php
 require_once '../config/database.php';
-require_once '../app/models/BlogPost.php';
+require_once '../app/models/BlogModel.php';
 require_once '../app/core/Paginator.php';
 
 $page = $_GET['page'] ?? 1;
-$paginated = BlogPost::paginate($page, Paginator::PER_PAGE, 'created_at DESC');
+$paginated = BlogModel::paginate($page, Paginator::PER_PAGE, 'created_at DESC');
 $paginationHtml = Paginator::generate($page, $paginated['total_pages'], '?page=');
 ?>
 <!DOCTYPE html>

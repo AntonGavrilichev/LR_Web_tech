@@ -84,14 +84,14 @@ class TestController extends Controller {
         $this->view->render('test/results', $data);
         require_once 'app/helpers/testHelper.php';
 
-        $data = [
-            'title' => 'Результаты тестирования',
-            'pageTitle' => 'Просмотр результатов теста',
-            'results' => $results,
-            'error' => $error ?? null
-        ];
+//        $data = [
+//            'title' => 'Результаты тестирования',
+//            'pageTitle' => 'Просмотр результатов теста',
+//            'results' => $results,
+//            'error' => $error ?? null
+//        ];
 
-        $this->view->render('test/results', $data);
+//        $this->view->render('test/results', $data);
     }
 
     private function saveTestResults($postData, $results) {
