@@ -18,7 +18,9 @@ class Router {
         'blog' => ['controller' => 'BlogController', 'action' => 'index'], // Редактор блога
         'blog/add' => ['controller' => 'BlogController', 'action' => 'add', 'method' => 'POST'],
         'blog/delete' => ['controller' => 'BlogController', 'action' => 'delete'],
-        'posts' => ['controller' => 'BlogController', 'action' => 'posts'], // Исправлено: отдельное действие для просмотра записей
+        'blog/upload' => ['controller' => 'BlogController', 'action' => 'upload'],
+        'blog/upload-csv' => ['controller' => 'BlogController', 'action' => 'uploadCsv', 'method' => 'POST'],
+        'posts' => ['controller' => 'BlogController', 'action' => 'posts'],
     ];
 
     public function route($url) {

@@ -33,21 +33,30 @@ class BlogModel
         }
     }
 
-    public function savePost($title, $content, $author = 'Аноним', $image_path = null)
-    {
-        $sql = "INSERT INTO blog_posts (title, content, author, image_path) 
-                VALUES (:title, :content, :author, :image_path)";
+    public function savePost($title, $content, $author = 'Аноним', $imagePath = null, $createdAt = null) {
+        if (empty($createdAt)) {
+            $createdAt = date('Y-m-d H:i:s');
+        }
 
-        $stmt = $this->db->prepare($sql);
+        $sql = "INSERT INTO blog_posts (title, content, author, image_path, created_at) 
+            VALUES (:title, :content, :author, :image_path, :created_at)";
 
-        $params = [
-            ':title' => $title,
-            ':content' => $content,
-            ':author' => $author,
-            ':image_path' => $image_path
-        ];
+        try {
+            $stmt = $this->db->prepare($sql);
 
-        return $stmt->execute($params);
+            $stmt->bindValue(':title', $title);
+            $stmt->bindValue(':content', $content);
+            $stmt->bindValue(':author', $author);
+            $stmt->bindValue(':image_path', $imagePath);
+            $stmt->bindValue(':created_at', $createdAt);
+
+            $result = $stmt->execute();
+
+            return $result;
+
+        } catch (PDOException $e) {
+            throw new Exception("Ошибка при сохранении записи: " . $e->getMessage());
+        }
     }
 
     public function getPosts($page = 1, $perPage = 5)
@@ -95,4 +104,6 @@ class BlogModel
         $stmt->execute();
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
+
+
 }

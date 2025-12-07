@@ -356,6 +356,7 @@
                     <ul class="dropdown-menu">
                         <li><a href="/blog">Редактор блога</a></li>
                         <li><a href="/posts">Записи блога</a></li>
+                        <li><a href="/blog/upload">Загрузка CSV</a></li>
                     </ul>
                 </li>
             </ul>
