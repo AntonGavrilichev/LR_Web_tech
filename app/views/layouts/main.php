@@ -293,6 +293,8 @@
                 <li><a href="/album">Фотоальбом</a></li>
                 <li><a href="/contact">Контакт</a></li>
                 <li><a href="/test">Тест</a></li>
+                <li><a href="/guestbook">Гостевая книга</a></li>
+                <li><a href="/upload">Загрузка сообщений гостевой книги</a></li>
             </ul>
         </nav>
     </header>

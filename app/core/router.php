@@ -8,6 +8,12 @@ class Router {
         'album' => ['controller' => 'AlbumController', 'action' => 'index'],
         'contact' => ['controller' => 'ContactController', 'action' => 'index'],
         'test' => ['controller' => 'TestController', 'action' => 'index'],
+        'guestbook' => ['controller' => 'GuestbookController', 'action' => 'index'],
+        'upload' => ['controller' => 'UploadController', 'action' => 'index'],
+        'upload/upload' => ['controller' => 'UploadController', 'action' => 'upload', 'method' => 'POST'],
+        'upload/downloadCurrent' => ['controller' => 'UploadController', 'action' => 'downloadCurrent'],
+        'upload/downloadBackup/(:any)' => ['controller' => 'UploadController', 'action' => 'downloadBackup'],
+        'upload/restoreBackup/(:any)' => ['controller' => 'UploadController', 'action' => 'restoreBackup'],
     ];
 
     public function route($url) {
