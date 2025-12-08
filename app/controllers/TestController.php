@@ -1,12 +1,33 @@
 <?php
+// Добавляем наследование от Controller
 class TestController extends Controller {
+    public function __construct() {
+        parent::__construct(); // Вызываем конструктор родителя
+    }
+
     public function index() {
+        // Сохраняем статистику посещений
+        $this->saveVisitStatistics();
+
+        // Проверяем авторизацию пользователя для доступа к тесту
+        // (согласно п.8 задания, результаты видны только авторизованным)
+        $userId = $this->isUserLoggedIn();
+
         $errors = [];
         $results = null;
         $formData = [];
 
         // Проверяем отправку формы
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            // Проверяем авторизацию перед обработкой результатов
+            if (!$userId) {
+                // Если не авторизован, сохраняем данные формы и редиректим на логин
+                $_SESSION['test_form_data'] = $_POST;
+                $_SESSION['redirect_after_login'] = '/test/index';
+                header('Location: /user/login');
+                exit;
+            }
+
             // Загружаем валидаторы
             require_once 'app/models/validators/FormValidation.php';
             require_once 'app/models/validators/CustomFormValidation.php';
@@ -22,8 +43,8 @@ class TestController extends Controller {
                 // Проверяем ответы
                 $results = $validator->checkAnswers($_POST);
 
-                // Сохраняем в базу данных
-                $validator->saveToDatabase($_POST['full_name'], $_POST, $results);
+                // Сохраняем в базу данных с привязкой к пользователю
+                $validator->saveToDatabase($_POST['full_name'], $_POST, $results, $_SESSION['user_id']);
 
                 // Формируем сообщение с результатами
                 $this->saveTestResults($_POST, $results);
@@ -36,36 +57,60 @@ class TestController extends Controller {
             }
         }
 
+        // Получаем информацию о текущем пользователе для отображения
+        $currentUser = $this->getCurrentUser();
+
         $data = [
             'title' => 'Тест по дисциплине',
             'pageTitle' => 'Тест по Теории вероятностей и математической статистике',
             'discipline' => 'Теория вероятностей и математическая статистика',
             'errors' => $errors,
             'results' => $results,
-            'formData' => $formData
+            'formData' => $formData,
+            'isLoggedIn' => $userId,
+            'currentUser' => $currentUser
         ];
 
         $this->view->render('test/index', $data);
     }
 
     public function viewResults() {
-        require_once 'config/database.php';
+        // Сохраняем статистику посещений
+        $this->saveVisitStatistics();
 
-        $db = Database::getConnection();
-
-        try {
-            $stmt = $db->query("SELECT * FROM test_results ORDER BY created_at DESC");
-            $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-            // Преобразуем JSON данные обратно в массив для удобного отображения
-            foreach ($results as &$result) {
-                $result['user_answers_array'] = json_decode($result['user_answers'], true);
-                $result['correct_answers_array'] = json_decode($result['correct_answers'], true);
-                $result['created_at_formatted'] = date('d.m.Y H:i', strtotime($result['created_at']));
+        // Проверяем авторизацию администратора для просмотра всех результатов
+        if (!$this->isAdmin()) {
+            // Для обычных пользователей показываем только их результаты
+            if (!$this->isUserLoggedIn()) {
+                header('Location: /user/login');
+                exit;
             }
-        } catch (PDOException $e) {
-            $results = [];
-            $error = "Ошибка при получении данных: " . $e->getMessage();
+
+            // Показываем только результаты текущего пользователя
+            try {
+                $stmt = $this->db->prepare("SELECT * FROM test_results WHERE user_id = ? ORDER BY created_at DESC");
+                $stmt->execute([$_SESSION['user_id']]);
+                $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            } catch (PDOException $e) {
+                $results = [];
+                $error = "Ошибка при получении данных: " . $e->getMessage();
+            }
+        } else {
+            // Администратор видит все результаты
+            try {
+                $stmt = $this->db->query("SELECT * FROM test_results ORDER BY created_at DESC");
+                $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            } catch (PDOException $e) {
+                $results = [];
+                $error = "Ошибка при получении данных: " . $e->getMessage();
+            }
+        }
+
+        // Преобразуем JSON данные обратно в массив для удобного отображения
+        foreach ($results as &$result) {
+            $result['user_answers_array'] = json_decode($result['user_answers'], true);
+            $result['correct_answers_array'] = json_decode($result['correct_answers'], true);
+            $result['created_at_formatted'] = date('d.m.Y H:i', strtotime($result['created_at']));
         }
 
         // Передаем функцию getAnswerText как замыкание
@@ -78,20 +123,12 @@ class TestController extends Controller {
             'pageTitle' => 'Просмотр результатов теста',
             'results' => $results,
             'error' => $error ?? null,
-            'getAnswerText' => $getAnswerText->bindTo($this) // Привязываем контекст
+            'getAnswerText' => $getAnswerText->bindTo($this),
+            'isAdmin' => $this->isAdmin(),
+            'isLoggedIn' => $this->isUserLoggedIn()
         ];
 
         $this->view->render('test/results', $data);
-        require_once 'app/helpers/testHelper.php';
-
-//        $data = [
-//            'title' => 'Результаты тестирования',
-//            'pageTitle' => 'Просмотр результатов теста',
-//            'results' => $results,
-//            'error' => $error ?? null
-//        ];
-
-//        $this->view->render('test/results', $data);
     }
 
     private function saveTestResults($postData, $results) {
@@ -135,6 +172,7 @@ class TestController extends Controller {
         $output .= "-------------------------\n";
         $output .= "ФИО: " . $postData['full_name'] . "\n";
         $output .= "Группа: " . $postData['group'] . "\n";
+        $output .= "ID пользователя: " . ($_SESSION['user_id'] ?? 'неизвестно') . "\n";
         $output .= "Дата тестирования: " . date('d.m.Y H:i:s') . "\n\n";
 
         $output .= "📊 РЕЗУЛЬТАТЫ:\n";

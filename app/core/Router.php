@@ -9,62 +9,136 @@ class Router {
         'contact' => ['controller' => 'ContactController', 'action' => 'index'],
         'test' => ['controller' => 'TestController', 'action' => 'index'],
         'test/results' => ['controller' => 'TestController', 'action' => 'viewResults'],
+
+        // Гостевая книга теперь только для пользователей (без загрузки)
         'guestbook' => ['controller' => 'GuestbookController', 'action' => 'index'],
-        'upload' => ['controller' => 'UploadController', 'action' => 'index'],
-        'upload/upload' => ['controller' => 'UploadController', 'action' => 'upload', 'method' => 'POST'],
-        'upload/downloadCurrent' => ['controller' => 'UploadController', 'action' => 'downloadCurrent'],
-        'upload/downloadBackup/(:any)' => ['controller' => 'UploadController', 'action' => 'downloadBackup'],
-        'upload/restoreBackup/(:any)' => ['controller' => 'UploadController', 'action' => 'restoreBackup'],
-        'blog' => ['controller' => 'BlogController', 'action' => 'index'], // Редактор блога
-        'blog/add' => ['controller' => 'BlogController', 'action' => 'add', 'method' => 'POST'],
-        'blog/delete' => ['controller' => 'BlogController', 'action' => 'delete'],
-        'blog/upload' => ['controller' => 'BlogController', 'action' => 'upload'],
-        'blog/upload-csv' => ['controller' => 'BlogController', 'action' => 'uploadCsv', 'method' => 'POST'],
+
+        // Блог теперь только для пользователей (без редактирования)
+        'blog' => ['controller' => 'BlogController', 'action' => 'index'],
         'posts' => ['controller' => 'BlogController', 'action' => 'posts'],
+
+        // Новые маршруты для пользователей
+        'user/register' => ['controller' => 'UserController', 'action' => 'register'],
+        'user/login' => ['controller' => 'UserController', 'action' => 'login'],
+        'user/logout' => ['controller' => 'UserController', 'action' => 'logout'],
+
+        // Маршруты для админки
+        'admin/login' => ['controller' => 'AdminLoginController', 'action' => 'login'],
+        'admin/logout' => ['controller' => 'AdminLoginController', 'action' => 'logout'],
+        'admin/statistics' => ['controller' => 'AdminStatisticsController', 'action' => 'index'],
+        'admin/blog/edit' => ['controller' => 'AdminBlogController', 'action' => 'edit'],
+        'admin/guestbook/upload' => ['controller' => 'AdminGuestbookController', 'action' => 'upload'],
+
+        // маршруты блога в админке
+        'admin/upload' => ['controller' => 'AdminUploadController', 'action' => 'index'],
+        'admin/upload/upload' => ['controller' => 'AdminUploadController', 'action' => 'upload', 'method' => 'POST'],
+        'admin/upload/downloadCurrent' => ['controller' => 'AdminUploadController', 'action' => 'downloadCurrent'],
+        'admin/upload/downloadBackup/(:any)' => ['controller' => 'AdminUploadController', 'action' => 'downloadBackup'],
+        'admin/upload/restoreBackup/(:any)' => ['controller' => 'AdminUploadController', 'action' => 'restoreBackup'],
+
+        'admin/blog/add' => ['controller' => 'AdminBlogController', 'action' => 'add', 'method' => 'POST'],
+        'admin/blog/delete' => ['controller' => 'AdminBlogController', 'action' => 'delete'],
+        'admin/blog/upload' => ['controller' => 'AdminBlogController', 'action' => 'upload'],
+        'admin/blog/upload-csv' => ['controller' => 'AdminBlogController', 'action' => 'uploadCsv', 'method' => 'POST'],
     ];
 
-    public function route($url) {
-        // Для отладки
-        error_log("Router: URL получен = '$url'");
+    public function route() {
+        $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+        $uri = trim($uri, '/');
 
-        // Если маршрут существует
-        if (isset($this->routes[$url])) {
-            $controllerName = $this->routes[$url]['controller'];
-            $actionName = $this->routes[$url]['action'];
+        // Удаляем query string если есть
+        $uri = strtok($uri, '?');
 
-            error_log("Router: Найден маршрут - контроллер: $controllerName, действие: $actionName");
+        // Логируем для отладки
+        error_log("Router: запрошен URI = '$uri'");
 
-            $controllerFile = 'app/controllers/' . $controllerName . '.php';
+        // Проверяем, соответствует ли URI какому-либо маршруту
+        foreach ($this->routes as $route => $config) {
+            // Заменяем (:any) на регулярное выражение
+            $pattern = str_replace('(:any)', '([^/]+)', $route);
+            $pattern = "#^" . $pattern . "$#";
 
-            if (file_exists($controllerFile)) {
-                require_once $controllerFile;
+            if (preg_match($pattern, $uri, $matches)) {
+                error_log("Router: найден маршрут '$route' для URI '$uri'");
 
-                if (class_exists($controllerName)) {
-                    $controller = new $controllerName();
+                $controllerName = $config['controller'];
+                $actionName = $config['action'];
 
-                    if (method_exists($controller, $actionName)) {
-                        $controller->$actionName();
-                        return;
+                // Проверяем метод запроса если указан
+                if (isset($config['method']) && $_SERVER['REQUEST_METHOD'] !== $config['method']) {
+                    $this->error("Метод не поддерживается для этого маршрута");
+                    return;
+                }
+
+                // Определяем путь к контроллеру
+                $controllerFile = 'app/controllers/' . $controllerName . '.php';
+
+                // Проверяем специальные случаи для админки
+                if (strpos($controllerName, 'Admin') === 0) {
+                    $controllerFile = 'app/controllers/admin/' . $controllerName . '.php';
+                }
+
+                error_log("Router: пробуем загрузить файл '$controllerFile'");
+
+                if (file_exists($controllerFile)) {
+                    require_once $controllerFile;
+
+                    if (class_exists($controllerName)) {
+                        $controller = new $controllerName();
+
+                        if (method_exists($controller, $actionName)) {
+                            // Передаем параметры из matches если есть
+                            if (count($matches) > 1) {
+                                array_shift($matches); // Убираем полное совпадение
+                                $controller->$actionName(...$matches);
+                            } else {
+                                $controller->$actionName();
+                            }
+                            return;
+                        } else {
+                            $this->error("Метод $actionName не найден в контроллере $controllerName");
+                            return;
+                        }
                     } else {
-                        $this->error("Метод $actionName не найден в контроллере $controllerName");
+                        $this->error("Класс $controllerName не найден в файле $controllerFile");
+                        return;
                     }
                 } else {
-                    $this->error("Класс $controllerName не найден");
+                    $this->error("Файл контроллера $controllerFile не найден");
+                    return;
                 }
-            } else {
-                $this->error("Файл контроллера $controllerFile не найден");
             }
-        } else {
-            // Показываем список доступных маршрутов для отладки
-            $this->debugPage($url);
         }
+
+        // Если маршрут не найден
+        $this->debugPage($uri);
     }
 
     private function error($message) {
         http_response_code(500);
-        echo "<h1>Ошибка роутера</h1>";
-        echo "<p>$message</p>";
-        echo "<p><a href='/'>Вернуться на главную</a></p>";
+        echo "<!DOCTYPE html>
+        <html>
+        <head>
+            <title>Ошибка роутера</title>
+            <style>
+                body { font-family: Arial, sans-serif; padding: 20px; }
+                .error { 
+                    background: #ffebee; 
+                    border: 1px solid #ffcdd2; 
+                    padding: 15px; 
+                    margin: 20px 0;
+                    border-radius: 5px;
+                }
+                a { color: #2196F3; text-decoration: none; }
+                a:hover { text-decoration: underline; }
+            </style>
+        </head>
+        <body>
+            <h1>Ошибка роутера</h1>
+            <div class='error'><strong>Ошибка:</strong> $message</div>
+            <p><a href='/'>Вернуться на главную</a></p>
+        </body>
+        </html>";
     }
 
     private function debugPage($requestedUrl) {
@@ -74,27 +148,52 @@ class Router {
             <title>Отладка маршрутов</title>
             <style>
                 body { font-family: Arial; padding: 20px; }
-                .error { background: #f8d7da; padding: 15px; border-radius: 5px; }
-                .routes { margin: 20px 0; }
+                .error { 
+                    background: #f8d7da; 
+                    padding: 15px; 
+                    border-radius: 5px;
+                    margin-bottom: 20px;
+                }
+                .routes { 
+                    margin: 20px 0; 
+                    padding: 15px;
+                    background: #f8f9fa;
+                    border-radius: 5px;
+                }
                 ul { list-style: none; padding: 0; }
-                li { margin: 5px 0; }
+                li { 
+                    margin: 10px 0; 
+                    padding: 10px;
+                    background: white;
+                    border-radius: 3px;
+                    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+                }
                 a { color: #667eea; text-decoration: none; }
                 a:hover { text-decoration: underline; }
+                .admin-route { border-left: 4px solid #dc3545; }
+                .user-route { border-left: 4px solid #28a745; }
             </style>
         </head>
         <body>
             <div class='error'>
                 <h2>404 - Маршрут не найден</h2>
-                <p>Запрошенный URL: <strong>$requestedUrl</strong></p>
+                <p>Запрошенный URL: <strong>/$requestedUrl</strong></p>
                 <p>Доступные маршруты:</p>
             </div>
             
             <div class='routes'>
+                <h3>Основные маршруты:</h3>
                 <ul>";
 
         foreach ($this->routes as $route => $info) {
             $displayRoute = empty($route) ? '/' : "/$route";
-            echo "<li><a href='$displayRoute'>$displayRoute</a> → {$info['controller']}::{$info['action']}()</li>";
+            $routeClass = strpos($route, 'admin/') === 0 ? 'admin-route' : (strpos($route, 'user/') === 0 ? 'user-route' : '');
+
+            echo "<li class='$routeClass'>
+                    <a href='$displayRoute'>$displayRoute</a>
+                    <br>
+                    <small>{$info['controller']}::{$info['action']}()</small>
+                  </li>";
         }
 
         echo "</ul>

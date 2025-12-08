@@ -359,6 +359,17 @@
                         <li><a href="/blog/upload">Загрузка CSV</a></li>
                     </ul>
                 </li>
+                <?php if (isset($_SESSION['isLoggedIn']) && $_SESSION['isLoggedIn']): ?>
+                    <li><span>Пользователь: <?php echo htmlspecialchars($_SESSION['user_full_name'] ?? $_SESSION['user_login']); ?></span></li>
+                    <li><a href="/user/logout">Выйти</a></li>
+                <?php else: ?>
+                    <li><a href="/user/login">Войти</a></li>
+                    <li><a href="/user/register">Регистрация</a></li>
+                <?php endif; ?>
+
+                <?php if (isset($_SESSION['isAdmin']) && $_SESSION['isAdmin']): ?>
+                    <li><a href="/admin/statistics" style="color: red; font-weight: bold;">Админка</a></li>
+                <?php endif; ?>
             </ul>
         </nav>
     </header>

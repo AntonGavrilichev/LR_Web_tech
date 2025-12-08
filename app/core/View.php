@@ -21,8 +21,17 @@ class View {
 
         // Извлекаем переменные для шаблона
         extract($this->data);
+
+        // Подготавливаем путь к шаблону
+        $templatePath = 'app/views/' . $template . '.php';
+
+        // Проверяем существование файла
+        if (!file_exists($templatePath)) {
+            throw new Exception("Шаблон не найден: $templatePath");
+        }
+
         ob_start();
-        include 'app/views/' . $template . '.php';
+        include $templatePath;
         $content = ob_get_clean();
 
         // Сохраняем контент в данных

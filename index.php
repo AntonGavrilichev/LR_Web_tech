@@ -1,6 +1,15 @@
 <?php
+// Настройка сессий
+ini_set('session.cookie_lifetime', 0); // До закрытия браузера
+ini_set('session.use_only_cookies', 1);
+ini_set('session.use_strict_mode', 1);
 
+// Обработка CSRF токенов (доп. безопасность)
 session_start();
+if (!isset($_SESSION['csrf_token'])) {
+    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+}
+
 
 // Включаем отображение ошибок
 error_reporting(E_ALL);
@@ -33,9 +42,13 @@ $_GET['url'] = $url;
 
 // Автозагрузка классов
 spl_autoload_register(function($className) {
+    // Преобразуем пространство имен или подпапки в путь
+    $className = str_replace('\\', '/', $className);
+
     $paths = [
         'app/core/' . $className . '.php',
         'app/controllers/' . $className . '.php',
+        'app/controllers/admin/' . $className . '.php', // Добавлено для admin-контроллеров
         'app/models/' . $className . '.php',
         'app/models/validators/' . $className . '.php'
     ];
