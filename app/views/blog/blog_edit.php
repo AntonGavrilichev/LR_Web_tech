@@ -1,17 +1,17 @@
 <?php
-require_once '../config/database.php';
-require_once '../app/models/BlogModel.php';
-require_once '../app/core/Paginator.php';
+require_once 'F:\Учеба\Веб-технологии\lb8\config\database.php';
+require_once 'F:\Учеба\Веб-технологии\lb8\app\models\BlogModel.php';
+require_once 'F:\Учеба\Веб-технологии\lb8\app\core\Paginator.php';
 
 // Добавление записи
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $imagePath = null;
 
     if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
-        $uploadDir = '../public/uploads/';
+        $uploadDir = 'F:\Учеба\Веб-технологии\lb8\public\uploads';
         $filename = uniqid() . '_' . basename($_FILES['image']['name']);
         move_uploaded_file($_FILES['image']['tmp_name'], $uploadDir . $filename);
-        $imagePath = 'uploads/' . $filename;
+        $imagePath = 'F:\Учеба\Веб-технологии\lb8\public\uploads' . $filename;
     }
 
     $post = new BlogModel([
@@ -26,10 +26,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 // Пагинация
-$page = $_GET['page'] ?? 1;
-$paginated = BlogModel::paginate($page, Paginator::PER_PAGE, 'created_at DESC');
-$paginationHtml = Paginator::generate($page, $paginated['total_pages'], '?page=');
-?>
+//$page = $_GET['page'] ?? 1;
+//$paginated = BlogModel::paginate($page, Paginator::PER_PAGE, 'created_at DESC');
+//$paginationHtml = Paginator::generate($page, $paginated['total_pages'], '?page=');
+//?>
 <!DOCTYPE html>
 <html>
 <head>
@@ -52,7 +52,7 @@ $paginationHtml = Paginator::generate($page, $paginated['total_pages'], '?page='
     <div class="post">
         <h3><?= htmlspecialchars($post->title) ?></h3>
         <?php if ($post->image_path): ?>
-            <img src="../public/<?= $post->image_path ?>" alt="" style="max-width: 300px;">
+            <img src="F:\Учеба\Веб-технологии\lb8\public\<?= $post->image_path ?>" alt="" style="max-width: 300px;">
         <?php endif; ?>
         <p><?= nl2br(htmlspecialchars($post->content)) ?></p>
         <small><?= $post->created_at ?></small>

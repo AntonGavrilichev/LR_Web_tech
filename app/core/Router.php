@@ -15,7 +15,7 @@ class Router {
 
         // Блог только для пользователей (без редактирования)
         'blog' => ['controller' => 'BlogController', 'action' => 'index'],
-        'posts' => ['controller' => 'BlogController', 'action' => 'posts'],
+        'blog/posts' => ['controller' => 'BlogController', 'action' => 'posts'],
         'blog/upload' => ['controller' => 'BlogController', 'action' => 'upload'],
         'blog/upload-csv' => ['controller' => 'BlogController', 'action' => 'uploadCsv', 'method' => 'POST'],
 
@@ -28,7 +28,7 @@ class Router {
         'admin/login' => ['controller' => 'AdminLoginController', 'action' => 'login'],
         'admin/logout' => ['controller' => 'AdminLoginController', 'action' => 'logout'],
         'admin/statistics' => ['controller' => 'AdminStatisticsController', 'action' => 'index'],
-        'admin/blog/edit' => ['controller' => 'AdminBlogController', 'action' => 'edit'],
+        'admin/blog_edit' => ['controller' => 'AdminBlogController', 'action' => 'edit'],
 
         // Исправленный маршрут для загрузки гостевой книги
         'admin/guestbook/upload' => ['controller' => 'AdminGuestbookController', 'action' => 'upload'],

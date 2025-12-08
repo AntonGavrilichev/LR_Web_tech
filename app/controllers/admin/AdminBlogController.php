@@ -23,7 +23,7 @@ class AdminBlogController extends Controller
             'pageTitle' => 'Редактор блога - Админ панель'
         ];
 
-        $this->view->render('admin/blog_edit', $data);
+        $this->view->render('blog/blog_edit', $data);
     }
 
     public function index() {
@@ -56,7 +56,38 @@ class AdminBlogController extends Controller
         header('Location: /admin/blog/upload'); // Изменено с /upload
         exit();
     }
+    public function delete() {
+        if (!isset($_GET['id'])) {
+            header('Location: /blog');
+            exit;
+        }
 
+        // Начинаем сессию
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+
+        $id = (int)$_GET['id'];
+
+        // Загружаем модель и удаляем
+        $this->loadModel('BlogModel');
+
+        try {
+            if ($this->model->deletePost($id)) {
+                $_SESSION['success_message'] = 'Запись успешно удалена!';
+            } else {
+                $_SESSION['error_message'] = 'Ошибка при удалении записи';
+            }
+        } catch (Exception $e) {
+            $_SESSION['error_message'] = 'Ошибка: ' . $e->getMessage();
+        }
+
+        // Редирект обратно на страницу, откуда пришли
+        $redirect = $_GET['redirect'] ?? 'blog';
+        $pageParam = isset($_GET['page']) ? '?page=' . $_GET['page'] : '';
+        header('Location: /' . $redirect . $pageParam);
+        exit;
+    }
     public function downloadBackup($filename) {
         $filepath = 'backup/' . basename($filename);
 

@@ -56,7 +56,7 @@ if (session_status() === PHP_SESSION_NONE) {
                             <strong>Дата:</strong> <?= date('d.m.Y H:i', strtotime($post['created_at'])) ?>
                         </div>
                         <div>
-                            <button onclick="if(confirm('Вы уверены, что хотите удалить эту запись?')) window.location.href='/blog/delete?id=<?= $post['id'] ?>&redirect=posts'"
+                            <button onclick="if(confirm('Вы уверены, что хотите удалить эту запись?')) window.location.href='/admin/blog/delete?id=<?= $post['id'] ?>&redirect=blog/posts'"
                                     style="background: #dc3545; color: white; padding: 5px 15px; border: none; border-radius: 4px; cursor: pointer;">
                                 Удалить
                             </button>
@@ -76,7 +76,7 @@ if (session_status() === PHP_SESSION_NONE) {
                     <?php
                     // Первая страница
                     if ($page > $range + 1): ?>
-                        <a href="/posts?page=1"
+                        <a href="/blog/posts?page=1"
                            style="display: inline-block; padding: 8px 12px; margin: 0 2px; border: 1px solid #ddd; border-radius: 4px; text-decoration: none; color: #667eea; background: white;">
                             1
                         </a>
@@ -96,7 +96,7 @@ if (session_status() === PHP_SESSION_NONE) {
                     <?= $i ?>
                 </span>
                         <?php else: ?>
-                            <a href="/posts?page=<?= $i ?>"
+                            <a href="/blog/posts?page=<?= $i ?>"
                                style="display: inline-block; padding: 8px 12px; margin: 0 2px; border: 1px solid #ddd; border-radius: 4px; text-decoration: none; color: #667eea; background: white;">
                                 <?= $i ?>
                             </a>
@@ -109,7 +109,7 @@ if (session_status() === PHP_SESSION_NONE) {
                         <?php if ($page < $totalPages - $range - 1): ?>
                             <span style="padding: 8px 12px; margin: 0 2px;">...</span>
                         <?php endif; ?>
-                        <a href="/posts?page=<?= $totalPages ?>"
+                        <a href="/blog/posts?page=<?= $totalPages ?>"
                            style="display: inline-block; padding: 8px 12px; margin: 0 2px; border: 1px solid #ddd; border-radius: 4px; text-decoration: none; color: #667eea; background: white;">
                             <?= $totalPages ?>
                         </a>

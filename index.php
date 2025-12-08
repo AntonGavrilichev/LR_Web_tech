@@ -36,6 +36,7 @@ spl_autoload_register(function($className) {
     $paths = [
         'app/core/' . $className . '.php',
         'app/controllers/' . $className . '.php',
+        'app/controllers/admin/' . $className . '.php',
         'app/models/' . $className . '.php',
         'app/models/validators/' . $className . '.php'
     ];

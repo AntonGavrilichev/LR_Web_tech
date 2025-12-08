@@ -25,7 +25,7 @@ if (session_status() === PHP_SESSION_NONE) {
     <!-- Форма добавления записи -->
     <div style="margin-bottom: 30px; padding: 20px; background: #f8f9fa; border-radius: 8px;">
         <h2 style="color: #764ba2; margin-top: 0;">Добавить новую запись</h2>
-        <form action="/blog/add" method="POST" enctype="multipart/form-data">
+        <form action="admin/blog/add" method="POST" enctype="multipart/form-data">
             <div style="margin-bottom: 15px;">
                 <label for="title" style="display: block; margin-bottom: 5px; font-weight: bold; color: #555;">
                     Тема сообщения *
