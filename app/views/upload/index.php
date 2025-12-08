@@ -1,3 +1,11 @@
+<!-- В самом начале файла добавьте проверку админ-доступа -->
+<?php
+if (!isset($_SESSION['isAdmin']) || $_SESSION['isAdmin'] != 1) {
+    header('Location: /admin/login');
+    exit;
+}
+?>
+
 <div class="content">
     <h1 style="color: #764ba2; margin-bottom: 30px;">
         <i class="fas fa-upload" style="margin-right: 10px;"></i>Загрузка сообщений гостевой книги
@@ -32,7 +40,7 @@
                 </div>
             </div>
 
-            <a href="/upload/downloadCurrent"
+            <a href="/admin/blog/upload/downloadCurrent"
                style="display: inline-flex; align-items: center; background: #28a745; color: white; padding: 10px 20px; border-radius: 5px; text-decoration: none; margin-right: 10px;">
                 <i class="fas fa-download" style="margin-right: 8px;"></i> Скачать текущий файл
             </a>
@@ -52,8 +60,8 @@
 
         <?php if ($uploadResult): ?>
             <div style="background: <?= $uploadResult['success'] ? '#d4edda' : '#f8d7da' ?>;
-                color: <?= $uploadResult['success'] ? '#155724' : '#721c24' ?>;
-                padding: 15px; border-radius: 5px; margin-bottom: 20px; border: 1px solid <?= $uploadResult['success'] ? '#c3e6cb' : '#f5c6cb' ?>;">
+                    color: <?= $uploadResult['success'] ? '#155724' : '#721c24' ?>;
+                    padding: 15px; border-radius: 5px; margin-bottom: 20px; border: 1px solid <?= $uploadResult['success'] ? '#c3e6cb' : '#f5c6cb' ?>;">
                 <strong><?= $uploadResult['success'] ? '✓ Успешно!' : '✗ Ошибка:' ?></strong>
                 <?= htmlspecialchars($uploadResult['message']) ?>
 
@@ -66,7 +74,8 @@
             </div>
         <?php endif; ?>
 
-        <form method="POST" action="/upload/upload" enctype="multipart/form-data"
+        <!-- Исправлена форма: action указывает на правильный маршрут -->
+        <form method="POST" action="/admin/blog/upload/upload" enctype="multipart/form-data"
               style="background: #f8f9fa; padding: 20px; border-radius: 5px;">
             <div style="margin-bottom: 20px;">
                 <label style="display: block; margin-bottom: 10px; font-weight: bold; color: #555;">
@@ -140,11 +149,11 @@
                                 <?= $backup['modified'] ?>
                             </td>
                             <td style="padding: 12px;">
-                                <a href="/upload/downloadBackup/<?= urlencode($backup['name']) ?>"
+                                <a href="/admin/blog/upload/downloadBackup/<?= urlencode($backup['name']) ?>"
                                    style="display: inline-flex; align-items: center; background: #17a2b8; color: white; padding: 6px 12px; border-radius: 3px; text-decoration: none; margin-right: 5px; font-size: 14px;">
                                     <i class="fas fa-download" style="margin-right: 5px;"></i> Скачать
                                 </a>
-                                <a href="/upload/restoreBackup/<?= urlencode($backup['name']) ?>"
+                                <a href="/admin/blog/upload/restoreBackup/<?= urlencode($backup['name']) ?>"
                                    onclick="return confirm('Вы уверены, что хотите восстановить эту резервную копию? Текущий файл будет заменен.')"
                                    style="display: inline-flex; align-items: center; background: #ffc107; color: #212529; padding: 6px 12px; border-radius: 3px; text-decoration: none; font-size: 14px;">
                                     <i class="fas fa-redo" style="margin-right: 5px;"></i> Восстановить
@@ -180,9 +189,11 @@
     }
 
     // Добавляем Font Awesome иконки
-    document.head.insertAdjacentHTML('beforeend',
-        '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">'
-    );
+    if (!document.querySelector('link[href*="font-awesome"]')) {
+        document.head.insertAdjacentHTML('beforeend',
+            '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">'
+        );
+    }
 </script>
 
 <style>

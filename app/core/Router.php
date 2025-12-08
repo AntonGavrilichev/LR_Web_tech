@@ -10,14 +10,16 @@ class Router {
         'test' => ['controller' => 'TestController', 'action' => 'index'],
         'test/results' => ['controller' => 'TestController', 'action' => 'viewResults'],
 
-        // Гостевая книга теперь только для пользователей (без загрузки)
+        // Гостевая книга только для пользователей (без загрузки)
         'guestbook' => ['controller' => 'GuestbookController', 'action' => 'index'],
 
-        // Блог теперь только для пользователей (без редактирования)
+        // Блог только для пользователей (без редактирования)
         'blog' => ['controller' => 'BlogController', 'action' => 'index'],
         'posts' => ['controller' => 'BlogController', 'action' => 'posts'],
+        'blog/upload' => ['controller' => 'BlogController', 'action' => 'upload'],
+        'blog/upload-csv' => ['controller' => 'BlogController', 'action' => 'uploadCsv', 'method' => 'POST'],
 
-        // Новые маршруты для пользователей
+        // маршруты для пользователей
         'user/register' => ['controller' => 'UserController', 'action' => 'register'],
         'user/login' => ['controller' => 'UserController', 'action' => 'login'],
         'user/logout' => ['controller' => 'UserController', 'action' => 'logout'],
@@ -27,19 +29,20 @@ class Router {
         'admin/logout' => ['controller' => 'AdminLoginController', 'action' => 'logout'],
         'admin/statistics' => ['controller' => 'AdminStatisticsController', 'action' => 'index'],
         'admin/blog/edit' => ['controller' => 'AdminBlogController', 'action' => 'edit'],
+
+        // Исправленный маршрут для загрузки гостевой книги
         'admin/guestbook/upload' => ['controller' => 'AdminGuestbookController', 'action' => 'upload'],
 
-        // маршруты блога в админке
-        'admin/upload' => ['controller' => 'AdminUploadController', 'action' => 'index'],
-        'admin/upload/upload' => ['controller' => 'AdminUploadController', 'action' => 'upload', 'method' => 'POST'],
-        'admin/upload/downloadCurrent' => ['controller' => 'AdminUploadController', 'action' => 'downloadCurrent'],
-        'admin/upload/downloadBackup/(:any)' => ['controller' => 'AdminUploadController', 'action' => 'downloadBackup'],
-        'admin/upload/restoreBackup/(:any)' => ['controller' => 'AdminUploadController', 'action' => 'restoreBackup'],
+        // маршруты блога в админке - ВАЖНО: специфичные маршруты с параметрами должны быть ВЫШЕ
+        'admin/blog/upload/downloadBackup/(:any)' => ['controller' => 'AdminBlogController', 'action' => 'downloadBackup'],
+        'admin/blog/upload/restoreBackup/(:any)' => ['controller' => 'AdminBlogController', 'action' => 'restoreBackup'],
+        'admin/blog/upload/downloadCurrent' => ['controller' => 'AdminBlogController', 'action' => 'downloadCurrent'],
+        'admin/blog/upload/upload' => ['controller' => 'AdminBlogController', 'action' => 'upload', 'method' => 'POST'],
+        'admin/blog/upload' => ['controller' => 'AdminBlogController', 'action' => 'index'],
 
         'admin/blog/add' => ['controller' => 'AdminBlogController', 'action' => 'add', 'method' => 'POST'],
         'admin/blog/delete' => ['controller' => 'AdminBlogController', 'action' => 'delete'],
-        'admin/blog/upload' => ['controller' => 'AdminBlogController', 'action' => 'upload'],
-        'admin/blog/upload-csv' => ['controller' => 'AdminBlogController', 'action' => 'uploadCsv', 'method' => 'POST'],
+
     ];
 
     public function route() {
@@ -50,7 +53,9 @@ class Router {
         $uri = strtok($uri, '?');
 
         // Логируем для отладки
-        error_log("Router: запрошен URI = '$uri'");
+        error_log("=== Router Start ===");
+        error_log("Запрошен URI: '$uri'");
+        error_log("Всего маршрутов: " . count($this->routes));
 
         // Проверяем, соответствует ли URI какому-либо маршруту
         foreach ($this->routes as $route => $config) {
@@ -58,8 +63,13 @@ class Router {
             $pattern = str_replace('(:any)', '([^/]+)', $route);
             $pattern = "#^" . $pattern . "$#";
 
+            error_log("Проверка маршрута: '$route' -> '$pattern'");
+
             if (preg_match($pattern, $uri, $matches)) {
-                error_log("Router: найден маршрут '$route' для URI '$uri'");
+                error_log("Совпадение найдено!");
+                error_log("Маршрут: $route");
+                error_log("URI: $uri");
+                error_log("Matches: " . print_r($matches, true));
 
                 $controllerName = $config['controller'];
                 $actionName = $config['action'];
@@ -78,7 +88,7 @@ class Router {
                     $controllerFile = 'app/controllers/admin/' . $controllerName . '.php';
                 }
 
-                error_log("Router: пробуем загрузить файл '$controllerFile'");
+                error_log("Загрузка контроллера: $controllerFile");
 
                 if (file_exists($controllerFile)) {
                     require_once $controllerFile;
@@ -90,6 +100,7 @@ class Router {
                             // Передаем параметры из matches если есть
                             if (count($matches) > 1) {
                                 array_shift($matches); // Убираем полное совпадение
+                                error_log("Передача параметров: " . print_r($matches, true));
                                 $controller->$actionName(...$matches);
                             } else {
                                 $controller->$actionName();
@@ -111,6 +122,7 @@ class Router {
         }
 
         // Если маршрут не найден
+        error_log("Маршрут не найден для URI: $uri");
         $this->debugPage($uri);
     }
 

@@ -354,9 +354,9 @@
                 <li class="dropdown">
                     <a href="/blog" class="dropdown-toggle">Блог</a>
                     <ul class="dropdown-menu">
-                        <li><a href="/blog">Редактор блога</a></li>
-                        <li><a href="/posts">Записи блога</a></li>
-                        <li><a href="/blog/upload">Загрузка CSV</a></li>
+                        <li><a href="admin/blog">Редактор блога</a></li>
+                        <li><a href="/blog/posts">Записи блога</a></li>
+                        <li><a href="/admin/blog/upload">Загрузка CSV</a></li>
                     </ul>
                 </li>
                 <?php if (isset($_SESSION['isLoggedIn']) && $_SESSION['isLoggedIn']): ?>
