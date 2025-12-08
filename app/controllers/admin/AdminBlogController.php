@@ -15,7 +15,105 @@ class AdminBlogController extends Controller
             exit;
         }
     }
+    public function add() {
+        // Только POST запросы
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            header('Location: /blog');
+            exit;
+        }
 
+        // Начинаем сессию
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+
+        // Валидация
+        $errors = $this->validate($_POST, $_FILES);
+
+        if (!empty($errors)) {
+            $_SESSION['form_errors'] = $errors;
+            $_SESSION['form_data'] = $_POST;
+            header('Location: /blog');
+            exit;
+        }
+
+
+        // Обработка файла
+        $imagePath = null;
+        if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
+            $imagePath = $this->handleFileUpload($_FILES['image']);
+            if (!$imagePath) {
+                $_SESSION['error_message'] = 'Не удалось сохранить изображение';
+                $_SESSION['form_data'] = $_POST;
+                header('Location: /blog');
+                exit;
+            }
+        }
+
+        // Загружаем модель и сохраняем
+        $this->loadModel('BlogModel');
+
+        $author = !empty($_POST['author']) ? trim($_POST['author']) : 'Аноним';
+
+        try {
+            $result = $this->model->savePost(
+                $_POST['title'],
+                $_POST['content'],
+                $author,
+                $imagePath
+            );
+
+            if ($result) {
+                $_SESSION['success_message'] = 'Запись успешно добавлена!';
+            } else {
+                $_SESSION['error_message'] = 'Ошибка при сохранении записи';
+                $_SESSION['form_data'] = $_POST;
+            }
+        } catch (Exception $e) {
+            $_SESSION['error_message'] = 'Ошибка: ' . $e->getMessage();
+            $_SESSION['form_data'] = $_POST;
+        }
+
+        header('Location: /blog');
+        exit;
+    }
+
+    private function validate($post, $files) {
+        $errors = [];
+
+        // Проверка заголовка
+        if (empty(trim($post['title'] ?? ''))) {
+            $errors['title'] = 'Тема сообщения обязательна для заполнения';
+        } elseif (strlen(trim($post['title'])) < 3) {
+            $errors['title'] = 'Тема сообщения должна содержать минимум 3 символа';
+        } elseif (strlen(trim($post['title'])) > 255) {
+            $errors['title'] = 'Тема сообщения должна содержать максимум 255 символов';
+        }
+
+        // Проверка содержания
+        if (empty(trim($post['content'] ?? ''))) {
+            $errors['content'] = 'Текст сообщения обязателен для заполнения';
+        } elseif (strlen(trim($post['content'])) < 10) {
+            $errors['content'] = 'Текст сообщения должен содержать минимум 10 символов';
+        }
+
+        // Проверка файла
+        if (isset($files['image']) && $files['image']['error'] !== UPLOAD_ERR_NO_FILE) {
+            if ($files['image']['error'] !== UPLOAD_ERR_OK) {
+                $errors['image'] = 'Ошибка при загрузке файла';
+            } elseif ($files['image']['size'] > 5 * 1024 * 1024) {
+                $errors['image'] = 'Размер файла не должен превышать 5MB';
+            } else {
+                $allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+                $fileType = mime_content_type($files['image']['tmp_name']);
+                if (!in_array($fileType, $allowedTypes)) {
+                    $errors['image'] = 'Допустимы только изображения (JPEG, PNG, GIF, WebP)';
+                }
+            }
+        }
+
+        return $errors;
+    }
     public function edit()
     {
         $data = [

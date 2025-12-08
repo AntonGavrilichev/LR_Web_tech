@@ -348,7 +348,7 @@
                     <a href="/guestbook" class="dropdown-toggle">Гостевая книга</a>
                     <ul class="dropdown-menu">
                         <li><a href="/guestbook">Просмотр сообщений</a></li>
-                        <li><a href="/upload">Загрузка сообщений</a></li>
+                        <li><a href="/admin/guestbook">Загрузка сообщений</a></li>
                     </ul>
                 </li>
                 <li class="dropdown">

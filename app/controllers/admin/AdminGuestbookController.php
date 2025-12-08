@@ -24,7 +24,7 @@ class AdminGuestbookController extends Controller
             'pageTitle' => 'Загрузка гостевой книги - Админ панель'
         ];
 
-        $this->view->render('admin/guestbook_upload', $data);
+        $this->view->render('guestbook/guestbook', $data);
     }
 }
 

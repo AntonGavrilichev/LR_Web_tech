@@ -12,6 +12,7 @@ class Router {
 
         // Гостевая книга только для пользователей (без загрузки)
         'guestbook' => ['controller' => 'GuestbookController', 'action' => 'index'],
+        'admin/guestbook' => ['controller' => 'AdminGuestbookController', 'action' => 'upload'],
 
         // Блог только для пользователей (без редактирования)
         'blog' => ['controller' => 'BlogController', 'action' => 'index'],
