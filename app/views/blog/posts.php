@@ -67,11 +67,12 @@ $csrf_token = $_SESSION['csrf_token'];
                                 Изменить
                             </button>
                         <?php endif; ?>
-
-                        <button onclick="if(confirm('Вы уверены, что хотите удалить эту запись?')) window.location.href='/admin/blog/delete?id=<?= $post['id'] ?>&redirect=blog/posts'"
-                                style="background: #dc3545; color: white; padding: 5px 15px; border: none; border-radius: 4px; cursor: pointer;">
-                            Удалить
-                        </button>
+                        <?php if (isset($_SESSION['isAdmin']) && $_SESSION['isAdmin'] == 1): ?>
+                            <button onclick="if(confirm('Вы уверены, что хотите удалить эту запись?')) window.location.href='/admin/blog/delete?id=<?= $post['id'] ?>&redirect=blog/posts'"
+                                    style="background: #dc3545; color: white; padding: 5px 15px; border: none; border-radius: 4px; cursor: pointer;">
+                                Удалить
+                            </button>
+                        <?php endif; ?>
                     </div>
                 </div>
 

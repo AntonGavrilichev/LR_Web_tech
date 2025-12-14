@@ -348,15 +348,21 @@
                     <a href="/guestbook" class="dropdown-toggle">Гостевая книга</a>
                     <ul class="dropdown-menu">
                         <li><a href="/guestbook">Просмотр сообщений</a></li>
-                        <li><a href="/admin/guestbook">Загрузка сообщений</a></li>
+                        <?php if (isset($_SESSION['isAdmin']) && $_SESSION['isAdmin']): ?>
+                            <li><a href="/admin/guestbook">Загрузка сообщений</a></li>
+                        <?php endif; ?>
                     </ul>
                 </li>
                 <li class="dropdown">
                     <a href="/blog" class="dropdown-toggle">Блог</a>
                     <ul class="dropdown-menu">
-                        <li><a href="/admin/blog_edit">Редактор блога</a></li>
+                        <?php if (isset($_SESSION['isAdmin']) && $_SESSION['isAdmin']): ?>
+                            <li><a href="/admin/blog_edit">Редактор блога</a></li>
+                        <?php endif; ?>
                         <li><a href="/blog/posts">Записи блога</a></li>
-                        <li><a href="/admin/blog/upload">Загрузка CSV</a></li>
+                        <?php if (isset($_SESSION['isAdmin']) && $_SESSION['isAdmin']): ?>
+                            <li><a href="/admin/blog/upload">Загрузка CSV</a></li>
+                        <?php endif; ?>
                     </ul>
                 </li>
                 <?php if (isset($_SESSION['isLoggedIn']) && $_SESSION['isLoggedIn']): ?>
