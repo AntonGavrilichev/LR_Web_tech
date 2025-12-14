@@ -51,6 +51,9 @@ class Router {
         // Маршруты для администрирования комментариев (ДОБАВЛЕНО - опционально)
         'admin/comments' => ['controller' => 'AdminCommentController', 'action' => 'index'],
         'admin/comments/delete' => ['controller' => 'AdminCommentController', 'action' => 'delete'],
+
+        'admin/blog/edit/(:num)' => ['controller' => 'AdminBlogController', 'action' => 'editAjax'],
+        'admin/blog/update' => ['controller' => 'AdminBlogController', 'action' => 'update', 'method' => 'POST'],
     ];
 
     public function route() {

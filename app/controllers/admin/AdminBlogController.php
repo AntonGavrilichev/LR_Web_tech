@@ -261,5 +261,82 @@ class AdminBlogController extends Controller
             exit();
         }
     }
+
+    // Добавить в AdminBlogController.php перед последней закрывающей фигурной скобкой
+
+    /**
+     * AJAX метод для получения данных записи для редактирования
+     */
+    public function editAjax($id) {
+        $this->loadModel('BlogModel');
+
+        $post = $this->model->getById($id);
+
+        if (!$post) {
+            header('Content-Type: text/plain; charset=utf-8');
+            echo "Запись не найдена";
+            exit;
+        }
+
+        // Возвращаем данные в формате Plaintext для Script
+        header('Content-Type: text/plain; charset=utf-8');
+        echo $post['id'] . "\n";
+        echo $post['title'] . "\n";
+        echo $post['content'] . "\n";
+        echo ($post['author'] ?? '') . "\n";
+        exit;
+    }
+
+    /**
+     * AJAX метод для обновления записи
+     */
+    public function update() {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            header('HTTP/1.1 405 Method Not Allowed');
+            exit;
+        }
+
+        // Проверяем CSRF токен
+        if (!$this->verifyCsrfToken($_POST['csrf_token'] ?? '')) {
+            header('HTTP/1.1 403 Forbidden');
+            echo "Ошибка CSRF токена";
+            exit;
+        }
+
+        $id = (int)($_POST['id'] ?? 0);
+        $title = trim($_POST['title'] ?? '');
+        $content = trim($_POST['content'] ?? '');
+        $author = trim($_POST['author'] ?? '');
+
+        // Валидация
+        $errors = [];
+        if (empty($title)) $errors[] = "Тема не может быть пустой";
+        if (empty($content)) $errors[] = "Текст не может быть пустым";
+        if (strlen($title) > 255) $errors[] = "Тема слишком длинная";
+
+        if (!empty($errors)) {
+            header('Content-Type: text/plain; charset=utf-8');
+            echo "Ошибка: " . implode(", ", $errors);
+            exit;
+        }
+
+        $this->loadModel('BlogModel');
+
+        try {
+            $result = $this->model->updatePost($id, $title, $content, $author);
+
+            if ($result) {
+                header('Content-Type: text/plain; charset=utf-8');
+                echo "Успешно: Запись обновлена";
+            } else {
+                header('Content-Type: text/plain; charset=utf-8');
+                echo "Ошибка: Не удалось обновить запись";
+            }
+        } catch (Exception $e) {
+            header('Content-Type: text/plain; charset=utf-8');
+            echo "Ошибка: " . $e->getMessage();
+        }
+        exit;
+    }
 }
 ?>

@@ -102,6 +102,37 @@ class BlogModel
         $stmt->execute();
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
+    public function updatePost($id, $title, $content, $author = null, $imagePath = null) {
+        try {
+            $sql = "UPDATE blog_posts SET 
+                title = :title, 
+                content = :content";
 
+            $params = [
+                ':id' => $id,
+                ':title' => $title,
+                ':content' => $content
+            ];
+
+            if ($author !== null) {
+                $sql .= ", author = :author";
+                $params[':author'] = $author;
+            }
+
+            if ($imagePath !== null) {
+                $sql .= ", image_path = :image_path";
+                $params[':image_path'] = $imagePath;
+            }
+
+            // Убрали updated_at из запроса
+            $sql .= " WHERE id = :id";
+
+            $stmt = $this->db->prepare($sql);
+            return $stmt->execute($params);
+
+        } catch (PDOException $e) {
+            throw new Exception("Ошибка при обновлении записи: " . $e->getMessage());
+        }
+    }
 
 }
