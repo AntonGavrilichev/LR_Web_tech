@@ -62,15 +62,25 @@ class BlogController extends Controller {
     }
 
     public function posts() {
-        // Загружаем модель
+        // Загружаем модель блога
         $this->loadModel('BlogModel');
+        $blogModel = $this->model; // Сохраняем модель блога
 
         // Получаем номер страницы
         $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
         if ($page < 1) $page = 1;
 
-        // Получаем данные
-        $blogData = $this->model->getPosts($page);
+        // Получаем данные блога
+        $blogData = $blogModel->getPosts($page);
+
+        // Загружаем модель комментариев отдельно
+        require_once 'app/models/CommentModel.php';
+        $commentModel = new CommentModel();
+
+        // Для каждой записи получаем количество комментариев
+        foreach ($blogData['posts'] as &$post) {
+            $post['comments_count'] = $commentModel->getCommentsCount($post['id']);
+        }
 
         // Подготавливаем данные для представления
         $data = [
@@ -79,15 +89,10 @@ class BlogController extends Controller {
             'posts' => $blogData['posts'],
             'page' => $blogData['page'],
             'totalPages' => $blogData['totalPages'],
-            'total' => $blogData['total']
+            'total' => $blogData['total'],
+            'csrf_token' => $this->generateCsrfToken() // Добавляем CSRF токен
         ];
-        $this->loadModel('CommentModel');
-        $commentModel = $this->model; // Сохраняем ссылку
 
-        // Для каждой записи получаем количество комментариев
-        foreach ($data['posts'] as &$post) {
-            $post['comments_count'] = $commentModel->getCommentsCount($post['id']);
-        }
         // Рендерим представление для записей
         $this->view->render('blog/posts', $data);
     }

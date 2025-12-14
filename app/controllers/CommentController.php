@@ -9,24 +9,32 @@ class CommentController extends Controller {
      * Обработка отправки комментария (через iFrame)
      */
     public function add() {
-        // Отладочная информация
-        error_log("=== CommentController::add() called ===");
+        error_log("=== CommentController::add() START ===");
+        error_log("REQUEST_URI: " . $_SERVER['REQUEST_URI']);
         error_log("REQUEST_METHOD: " . $_SERVER['REQUEST_METHOD']);
+        error_log("Content-Type: " . ($_SERVER['CONTENT_TYPE'] ?? 'not set'));
         error_log("POST data: " . print_r($_POST, true));
-        error_log("Session status: " . session_status());
+        error_log("Session ID: " . session_id());
 
-        // Проверяем модель
-        if (!$this->model) {
-            error_log("Модель не загружена!");
-            header('Content-Type: text/xml; charset=utf-8');
-            echo '<?xml version="1.0" encoding="UTF-8"?>';
-            echo '<response>';
-            echo '<status>error</status>';
-            echo '<message>Ошибка инициализации контроллера</message>';
-            echo '</response>';
-            exit;
-        } else {
-            error_log("Модель загружена успешно: " . get_class($this->model));
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+
+        error_log("Session data: " . print_r($_SESSION, true));
+
+        // Проверяем авторизацию
+        if (!isset($_SESSION['isLoggedIn']) || !$_SESSION['isLoggedIn']) {
+            error_log("Пользователь не авторизован");
+            $this->returnError('Требуется авторизация. Пожалуйста, войдите в систему.');
+            return;
+        }
+
+        error_log("User is logged in, ID: " . ($_SESSION['user_id'] ?? 'not set'));
+
+        // Проверяем CSRF токен
+        if (!isset($_POST['csrf_token']) || !$this->verifyCsrfToken($_POST['csrf_token'])) {
+            $this->returnError('Недействительный CSRF токен');
+            return;
         }
         // Начинаем сессию если не начата
         if (session_status() === PHP_SESSION_NONE) {
@@ -120,6 +128,16 @@ class CommentController extends Controller {
             echo '</response>';
             exit;
         }
+    }
+
+    private function returnError($message) {
+        header('Content-Type: text/xml; charset=utf-8');
+        echo '<?xml version="1.0" encoding="UTF-8"?>';
+        echo '<response>';
+        echo '<status>error</status>';
+        echo '<message>' . htmlspecialchars($message) . '</message>';
+        echo '</response>';
+        exit;
     }
 }
 ?>

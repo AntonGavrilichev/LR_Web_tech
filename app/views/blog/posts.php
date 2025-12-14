@@ -3,6 +3,10 @@
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
+if (!isset($_SESSION['csrf_token'])) {
+    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+}
+$csrf_token = $_SESSION['csrf_token'];
 ?>
 <div class="content">
     <h1>Записи блога</h1>
@@ -74,7 +78,7 @@ if (session_status() === PHP_SESSION_NONE) {
 
                     <!-- Кнопка добавления комментария (только для авторизованных) -->
                     <?php if (isset($_SESSION['isLoggedIn']) && $_SESSION['isLoggedIn']): ?>
-                        <button onclick="showCommentForm(<?= $post['id'] ?>, '<?= htmlspecialchars($_SESSION['user_full_name'] ?? $_SESSION['user_login']) ?>')"
+                        <button onclick="showCommentForm(<?= $post['id'] ?>, '<?= htmlspecialchars($_SESSION['user_full_name'] ?? $_SESSION['user_login'] ?? 'Пользователь') ?>')"
                                 style="background: #28a745; color: white; padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer; margin-top: 10px;">
                             Добавить комментарий
                         </button>
@@ -155,14 +159,17 @@ if (session_status() === PHP_SESSION_NONE) {
         <h3 style="margin-top: 0;">Добавить комментарий</h3>
         <p id="commentAuthorInfo" style="color: #6c757d; margin-bottom: 15px;"></p>
 
-        <form id="commentForm" method="POST" target="commentIframe" style="display: none;">
+        <form id="commentForm" method="POST" style="display: none;">
             <input type="hidden" id="commentPostId" name="post_id" value="">
+            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_token) ?>">
+
             <div style="margin-bottom: 15px;">
                 <label for="commentContent" style="display: block; margin-bottom: 5px; font-weight: bold;">Текст комментария:</label>
                 <textarea id="commentContent" name="content" rows="4"
                           style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;"
                           required></textarea>
             </div>
+
             <div style="display: flex; justify-content: flex-end; gap: 10px;">
                 <button type="button" onclick="closeCommentForm()"
                         style="padding: 8px 16px; background: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer;">
@@ -177,10 +184,8 @@ if (session_status() === PHP_SESSION_NONE) {
     </div>
 </div>
 
-<!-- Скрытый iframe для отправки формы -->
-<iframe id="commentIframe" name="commentIframe" style="display: none;"></iframe>
 
-<!-- JavaScript для работы с комментариями -->
+
 <script>
     // Текущий postId для комментария
     var currentPostId = 0;
@@ -188,6 +193,7 @@ if (session_status() === PHP_SESSION_NONE) {
 
     // Показать форму для комментария
     function showCommentForm(postId, authorName) {
+        console.log('showCommentForm called:', postId, authorName);
         currentPostId = postId;
         currentAuthorName = authorName;
 
@@ -207,11 +213,27 @@ if (session_status() === PHP_SESSION_NONE) {
 
     // Загрузка комментариев через Fetch API
     function loadComments(postId) {
+        console.log('Loading comments for post:', postId);
+
         fetch('/blog/comments?post_id=' + postId)
-            .then(response => response.text())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Ошибка сети: ' + response.status);
+                }
+                return response.text();
+            })
             .then(xmlText => {
+                console.log('Received XML:', xmlText);
+
                 const parser = new DOMParser();
                 const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
+
+                // Проверяем на ошибки парсинга XML
+                const parserError = xmlDoc.getElementsByTagName('parsererror');
+                if (parserError.length > 0) {
+                    console.error('XML parse error:', parserError[0].textContent);
+                    throw new Error('Ошибка разбора XML');
+                }
 
                 const commentsContainer = document.getElementById('comments-' + postId);
                 const comments = xmlDoc.getElementsByTagName('comment');
@@ -224,20 +246,27 @@ if (session_status() === PHP_SESSION_NONE) {
                 let html = '';
                 for (let i = 0; i < comments.length; i++) {
                     const comment = comments[i];
-                    const author = comment.getElementsByTagName('author')[0].textContent;
-                    const content = comment.getElementsByTagName('content')[0].textContent;
-                    const date = comment.getElementsByTagName('date_formatted')[0].textContent;
+
+                    // Безопасное получение элементов
+                    const getText = (tagName) => {
+                        const elements = comment.getElementsByTagName(tagName);
+                        return elements.length > 0 ? elements[0].textContent : '';
+                    };
+
+                    const author = getText('author');
+                    const content = getText('content');
+                    const date = getText('date_formatted') || getText('created_at');
 
                     html += `
-                <div style="background: #f8f9fa; padding: 10px; border-radius: 5px; margin-bottom: 10px; border-left: 3px solid #007bff;">
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
-                        <strong style="color: #495057;">${author}</strong>
-                        <span style="color: #6c757d; font-size: 12px;">${date}</span>
-                    </div>
-                    <div style="color: #212529;">
-                        ${content.replace(/\n/g, '<br>')}
-                    </div>
-                </div>`;
+                    <div style="background: #f8f9fa; padding: 10px; border-radius: 5px; margin-bottom: 10px; border-left: 3px solid #007bff;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                            <strong style="color: #495057;">${author}</strong>
+                            <span style="color: #6c757d; font-size: 12px;">${date}</span>
+                        </div>
+                        <div style="color: #212529; white-space: pre-wrap;">
+                            ${content.replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br>')}
+                        </div>
+                    </div>`;
                 }
 
                 commentsContainer.innerHTML = html;
@@ -245,50 +274,109 @@ if (session_status() === PHP_SESSION_NONE) {
             .catch(error => {
                 console.error('Ошибка при загрузке комментариев:', error);
                 document.getElementById('comments-' + postId).innerHTML =
-                    '<p style="color: #dc3545;">Ошибка загрузки комментариев</p>';
+                    '<p style="color: #dc3545;">Ошибка загрузки комментариев: ' + error.message + '</p>';
             });
     }
 
-    // Инициализация iframe обработчика
+    // Инициализация после загрузки DOM
     document.addEventListener('DOMContentLoaded', function() {
-        const iframe = document.getElementById('commentIframe');
+        console.log('DOM loaded, setting up comment form...');
 
-        iframe.onload = iframe.onreadystatechange = function() {
-            if (this.readyState && this.readyState != 'complete') return;
+        // Настройка формы комментария
+        const commentForm = document.getElementById('commentForm');
 
-            try {
-                const iframeDoc = this.contentDocument || this.contentWindow.document;
-                const xmlText = iframeDoc.body.innerHTML;
+        commentForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            console.log('Form submitted');
 
-                const parser = new DOMParser();
-                const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
+            // Проверяем авторизацию
+            <?php if (!isset($_SESSION['isLoggedIn']) || !$_SESSION['isLoggedIn']): ?>
+            alert('Требуется авторизация для добавления комментария');
+            return;
+            <?php endif; ?>
 
-                const status = xmlDoc.getElementsByTagName('status')[0].textContent;
-                const message = xmlDoc.getElementsByTagName('message')[0].textContent;
+            // Собираем данные формы
+            const formData = new FormData(commentForm);
 
-                if (status === 'success') {
-                    // Закрываем модальное окно
-                    closeCommentForm();
+            // Отправляем запрос
+            fetch('/comment/add', {
+                method: 'POST',
+                body: formData
+            })
+                .then(response => {
+                    console.log('Response status:', response.status);
+                    if (!response.ok) {
+                        throw new Error('HTTP error: ' + response.status);
+                    }
+                    return response.text();
+                })
+                .then(xmlText => {
+                    console.log('Response XML:', xmlText);
 
-                    // Обновляем комментарии
-                    loadComments(currentPostId);
+                    const parser = new DOMParser();
+                    const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
 
-                    // Показываем сообщение об успехе
-                    alert('Комментарий успешно добавлен!');
-                } else {
-                    alert('Ошибка: ' + message);
-                }
-            } catch (e) {
-                console.error('Ошибка обработки ответа:', e);
-                alert('Ошибка при отправке комментария');
+                    // Проверяем на ошибки парсинга
+                    const parserError = xmlDoc.getElementsByTagName('parsererror');
+                    if (parserError.length > 0) {
+                        throw new Error('Неверный ответ сервера');
+                    }
+
+                    const statusElement = xmlDoc.getElementsByTagName('status');
+                    const messageElement = xmlDoc.getElementsByTagName('message');
+
+                    if (statusElement.length === 0 || messageElement.length === 0) {
+                        throw new Error('Неверный формат ответа');
+                    }
+
+                    const status = statusElement[0].textContent;
+                    const message = messageElement[0].textContent;
+
+                    if (status === 'success') {
+                        // Закрываем модальное окно
+                        closeCommentForm();
+
+                        // Обновляем комментарии
+                        loadComments(currentPostId);
+
+                        // Показываем сообщение об успехе
+                        alert('Комментарий успешно добавлен!');
+                    } else {
+                        alert('Ошибка: ' + message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Ошибка при отправке комментария:', error);
+                    alert('Ошибка при отправке комментария: ' + error.message);
+                });
+        });
+
+        // Закрытие модального окна при клике вне его
+        document.getElementById('commentModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeCommentForm();
             }
-        };
+        });
 
-        // Настройка формы
-        const form = document.getElementById('commentForm');
-        form.action = '/comment/add';
-        form.method = 'POST';
-        form.enctype = 'application/x-www-form-urlencoded';
-        form.target = 'commentIframe';
+        // Закрытие модального окна при нажатии Escape
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeCommentForm();
+            }
+        });
+
+        // Отладочная информация
+        console.log('Comment system initialized');
+
+        // Проверяем наличие кнопок
+        const buttons = document.querySelectorAll('button[onclick*="showCommentForm"]');
+        console.log('Found comment buttons:', buttons.length);
+
+        buttons.forEach((btn, index) => {
+            console.log(`Button ${index}:`, btn.outerHTML);
+            // Убедимся, что onclick работает
+            const oldClick = btn.getAttribute('onclick');
+            btn.setAttribute('onclick', oldClick + '; return false;');
+        });
     });
 </script>
