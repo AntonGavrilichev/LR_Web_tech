@@ -37,7 +37,7 @@
         <?php foreach ($photos as $index => $photo):
             $photoPath = $photosDir . $photo['filename'];
             $photoExists = file_exists($photoPath);
-            $imgSrc = $photoExists ? $photoPath : 'https://via.placeholder.com/300x200/667eea/ffffff?text=' . urlencode($photo['name']);
+            $imgSrc = $photoExists ? $photoPath : 'photos/' . urlencode($photo['name']);
             ?>
             <div class="photo-item" onclick="openGallery(<?= $index ?>)" title="Нажмите для увеличения">
                 <img src="<?= $imgSrc ?>"
@@ -328,7 +328,7 @@
                 return photoPath;
             })
             .catch(() => {
-                return 'https://via.placeholder.com/800x600/667eea/ffffff?text=' + encodeURIComponent(photo.name);
+                return 'photos/' + encodeURIComponent(photo.name);
             })
             .then(src => {
                 document.getElementById('modalImage').src = src;

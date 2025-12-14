@@ -74,7 +74,7 @@ if (!isset($_SESSION['isAdmin']) || $_SESSION['isAdmin'] != 1) {
             </div>
         <?php endif; ?>
 
-        <!-- Исправлена форма: action указывает на правильный маршрут -->
+
         <form method="POST" action="/admin/blog/upload/upload" enctype="multipart/form-data"
               style="background: #f8f9fa; padding: 20px; border-radius: 5px;">
             <div style="margin-bottom: 20px;">

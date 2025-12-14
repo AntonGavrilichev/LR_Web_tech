@@ -38,7 +38,7 @@ class Router {
         // Исправленный маршрут для загрузки гостевой книги
         'admin/guestbook/upload' => ['controller' => 'AdminGuestbookController', 'action' => 'upload'],
 
-        // Маршруты блога в админке - ВАЖНО: специфичные маршруты с параметрами должны быть ВЫШЕ
+        // Маршруты блога в админке -
         'admin/blog/upload/downloadBackup/(:any)' => ['controller' => 'AdminBlogController', 'action' => 'downloadBackup'],
         'admin/blog/upload/restoreBackup/(:any)' => ['controller' => 'AdminBlogController', 'action' => 'restoreBackup'],
         'admin/blog/upload/downloadCurrent' => ['controller' => 'AdminBlogController', 'action' => 'downloadCurrent'],
@@ -48,7 +48,7 @@ class Router {
         'admin/blog/add' => ['controller' => 'AdminBlogController', 'action' => 'add', 'method' => 'POST'],
         'admin/blog/delete' => ['controller' => 'AdminBlogController', 'action' => 'delete'],
 
-        // Маршруты для администрирования комментариев (ДОБАВЛЕНО - опционально)
+        // Маршруты для администрирования комментариев
         'admin/comments' => ['controller' => 'AdminCommentController', 'action' => 'index'],
         'admin/comments/delete' => ['controller' => 'AdminCommentController', 'action' => 'delete'],
 
