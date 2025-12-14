@@ -81,7 +81,13 @@ class BlogController extends Controller {
             'totalPages' => $blogData['totalPages'],
             'total' => $blogData['total']
         ];
+        $this->loadModel('CommentModel');
+        $commentModel = $this->model; // Сохраняем ссылку
 
+        // Для каждой записи получаем количество комментариев
+        foreach ($data['posts'] as &$post) {
+            $post['comments_count'] = $commentModel->getCommentsCount($post['id']);
+        }
         // Рендерим представление для записей
         $this->view->render('blog/posts', $data);
     }
@@ -352,6 +358,46 @@ class BlogController extends Controller {
 
         return $result;
     }
+    public function comments() {
+        // Загружаем модель комментариев
+        $this->loadModel('CommentModel');
 
+        $postId = isset($_GET['post_id']) ? (int)$_GET['post_id'] : 0;
+
+        if ($postId < 1) {
+            // Возвращаем пустой XML в случае ошибки
+            header('Content-Type: text/xml; charset=utf-8');
+            echo '<?xml version="1.0" encoding="UTF-8"?>';
+            echo '<response><error>Неверный ID записи</error></response>';
+            exit;
+        }
+
+        // Получаем комментарии
+        $comments = $this->model->getCommentsByPostId($postId);
+
+        // Генерируем XML ответ
+        header('Content-Type: text/xml; charset=utf-8');
+        echo '<?xml version="1.0" encoding="UTF-8"?>';
+        echo '<response>';
+
+        if (empty($comments)) {
+            echo '<comments count="0"></comments>';
+        } else {
+            echo '<comments count="' . count($comments) . '">';
+            foreach ($comments as $comment) {
+                echo '<comment>';
+                echo '<id>' . htmlspecialchars($comment['id']) . '</id>';
+                echo '<author>' . htmlspecialchars($comment['author_name'] ?? $comment['author_login']) . '</author>';
+                echo '<content>' . htmlspecialchars($comment['content']) . '</content>';
+                echo '<created_at>' . htmlspecialchars($comment['created_at']) . '</created_at>';
+                echo '<date_formatted>' . date('d.m.Y H:i', strtotime($comment['created_at'])) . '</date_formatted>';
+                echo '</comment>';
+            }
+            echo '</comments>';
+        }
+
+        echo '</response>';
+        exit;
+    }
 }
 ?>

@@ -20,6 +20,10 @@ class Router {
         'blog/upload' => ['controller' => 'BlogController', 'action' => 'upload'],
         'blog/upload-csv' => ['controller' => 'BlogController', 'action' => 'uploadCsv', 'method' => 'POST'],
 
+        // Маршруты для комментариев
+        'blog/comments' => ['controller' => 'BlogController', 'action' => 'comments'],
+        'comment/add' => ['controller' => 'CommentController', 'action' => 'add', 'method' => 'POST'],
+
         // маршруты для пользователей
         'user/register' => ['controller' => 'UserController', 'action' => 'register'],
         'user/login' => ['controller' => 'UserController', 'action' => 'login'],
@@ -34,7 +38,7 @@ class Router {
         // Исправленный маршрут для загрузки гостевой книги
         'admin/guestbook/upload' => ['controller' => 'AdminGuestbookController', 'action' => 'upload'],
 
-        // маршруты блога в админке - ВАЖНО: специфичные маршруты с параметрами должны быть ВЫШЕ
+        // Маршруты блога в админке - ВАЖНО: специфичные маршруты с параметрами должны быть ВЫШЕ
         'admin/blog/upload/downloadBackup/(:any)' => ['controller' => 'AdminBlogController', 'action' => 'downloadBackup'],
         'admin/blog/upload/restoreBackup/(:any)' => ['controller' => 'AdminBlogController', 'action' => 'restoreBackup'],
         'admin/blog/upload/downloadCurrent' => ['controller' => 'AdminBlogController', 'action' => 'downloadCurrent'],
@@ -44,6 +48,9 @@ class Router {
         'admin/blog/add' => ['controller' => 'AdminBlogController', 'action' => 'add', 'method' => 'POST'],
         'admin/blog/delete' => ['controller' => 'AdminBlogController', 'action' => 'delete'],
 
+        // Маршруты для администрирования комментариев (ДОБАВЛЕНО - опционально)
+        'admin/comments' => ['controller' => 'AdminCommentController', 'action' => 'index'],
+        'admin/comments/delete' => ['controller' => 'AdminCommentController', 'action' => 'delete'],
     ];
 
     public function route() {
