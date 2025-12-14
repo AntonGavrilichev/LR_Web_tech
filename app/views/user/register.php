@@ -53,4 +53,108 @@ if (!isset($layout)) {
             </p>
         </form>
     <?php endif; ?>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const loginInput = document.getElementById('login');
+            const checkButton = document.createElement('button');
+            const statusDiv = document.createElement('div');
+
+            // Создаем кнопку проверки
+            checkButton.type = 'button';
+            checkButton.textContent = 'Проверить занятость';
+            checkButton.className = 'btn btn-secondary';
+            checkButton.style.marginLeft = '10px';
+            checkButton.style.marginTop = '5px';
+
+            // Создаем div для отображения статуса
+            statusDiv.id = 'login-status';
+            statusDiv.style.marginTop = '5px';
+            statusDiv.style.fontWeight = 'bold';
+
+            // Добавляем элементы после поля ввода логина
+            loginInput.parentNode.appendChild(checkButton);
+            loginInput.parentNode.appendChild(statusDiv);
+
+            // Функция проверки логина через Fetch API
+            function checkLoginAvailability() {
+                const login = loginInput.value.trim();
+
+                if (!login) {
+                    statusDiv.textContent = 'Введите логин для проверки';
+                    statusDiv.style.color = '#ff9800';
+                    return;
+                }
+
+                // Минимальная длина логина
+                if (login.length < 3) {
+                    statusDiv.textContent = 'Логин должен быть не менее 3 символов';
+                    statusDiv.style.color = '#ff9800';
+                    return;
+                }
+
+                // Показываем загрузку
+                statusDiv.textContent = 'Проверяем...';
+                statusDiv.style.color = '#2196f3';
+                checkButton.disabled = true;
+
+                // ОТПРАВЛЯЕМ ЗАПРОС НА ПРАВИЛЬНЫЙ URL
+                // Используйте абсолютный или относительный путь к check_login.php
+                fetch('../api/check_login.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        login: login,
+                        // Можно добавить CSRF токен если есть
+                        // csrf_token: '<?php //echo $_SESSION["csrf_token"] ?? ""; ?>'
+                    })
+                })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (data.error) {
+                            statusDiv.textContent = 'Ошибка: ' + data.error;
+                            statusDiv.style.color = '#f44336';
+                        } else {
+                            if (data.isTaken) {
+                                statusDiv.textContent = data.message;
+                                statusDiv.style.color = '#f44336';
+                            } else {
+                                statusDiv.textContent = data.message;
+                                statusDiv.style.color = '#4caf50';
+                            }
+                        }
+                    })
+                    .catch(error => {
+                        statusDiv.textContent = 'Ошибка при проверке логина: ' + error.message;
+                        statusDiv.style.color = '#f44336';
+                        console.error('Error details:', error);
+                    })
+                    .finally(() => {
+                        checkButton.disabled = false;
+                    });
+            }
+
+            // Обработчик клика по кнопке
+            checkButton.addEventListener('click', checkLoginAvailability);
+
+            // Обработчик события blur (потеря фокуса)
+            loginInput.addEventListener('blur', function() {
+                if (this.value.trim().length >= 3) {
+                    checkLoginAvailability();
+                }
+            });
+
+            // Очистка статуса при изменении логина
+            loginInput.addEventListener('input', function() {
+                statusDiv.textContent = '';
+            });
+        });
+    </script>
 </div>
