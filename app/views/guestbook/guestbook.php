@@ -8,7 +8,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         trim($_POST['message'])
     ];
 
-    $fileData = guestbook . phpimplode(';', $data) . PHP_EOL;
+    $fileData = 'guestbook.php' . implode(';', $data) . PHP_EOL;
     file_put_contents('messages.inc', $fileData, FILE_APPEND);
     header('Location: ?success=1');
     exit;
