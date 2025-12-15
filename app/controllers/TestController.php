@@ -23,7 +23,7 @@ class TestController extends Controller {
             if (!$userId) {
                 // Если не авторизован, сохраняем данные формы и редиректим на логин
                 $_SESSION['test_form_data'] = $_POST;
-                $_SESSION['redirect_after_login'] = '/test/index';
+                $_SESSION['redirect_after_login'] = '/test';
                 header('Location: /user/login');
                 exit;
             }

@@ -126,7 +126,7 @@ class UserController extends Controller {
                         if (isset($_SESSION['test_form_data'])) {
                             $testData = $_SESSION['test_form_data'];
                             unset($_SESSION['test_form_data']);
-                            header('Location: /test/index');
+                            header('Location: /test');
                             exit;
                         }
 
