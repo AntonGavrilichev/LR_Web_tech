@@ -10,15 +10,50 @@ session_start();
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
+// === ВАЖНО: ПЕРВАЯ ПРОВЕРКА - СТАТИЧЕСКИЕ ФАЙЛЫ ===
+$requestUri = $_SERVER['REQUEST_URI'];
+$scriptName = $_SERVER['SCRIPT_NAME'];
+
+// Если запрос идет к статическому файлу - обрабатываем сразу
+if (preg_match('/\.(jpg|jpeg|png|gif|webp|ico|svg|css|js)$/i', $requestUri)) {
+    // Убираем параметры запроса если есть
+    $cleanUri = strtok($requestUri, '?');
+    $filePath = __DIR__ . $cleanUri;
+
+    if (file_exists($filePath) && is_file($filePath)) {
+        $ext = strtolower(pathinfo($filePath, PATHINFO_EXTENSION));
+        $mimeTypes = [
+            'jpg' => 'image/jpeg',
+            'jpeg' => 'image/jpeg',
+            'png' => 'image/png',
+            'gif' => 'image/gif',
+            'webp' => 'image/webp',
+            'svg' => 'image/svg+xml',
+            'css' => 'text/css',
+            'js' => 'application/javascript',
+            'ico' => 'image/x-icon',
+        ];
+
+        if (isset($mimeTypes[$ext])) {
+            header('Content-Type: ' . $mimeTypes[$ext]);
+        } else {
+            $mime = mime_content_type($filePath);
+            if ($mime) {
+                header('Content-Type: ' . $mime);
+            }
+        }
+
+        readfile($filePath);
+        exit;
+    }
+}
+// === КОНЕЦ ПРОВЕРКИ СТАТИЧЕСКИХ ФАЙЛОВ ===
+
 // Определяем базовый путь
 $basePath = dirname($_SERVER['SCRIPT_NAME']);
 if ($basePath == '/') {
     $basePath = '';
 }
-
-// Получаем URL
-$requestUri = $_SERVER['REQUEST_URI'];
-$scriptName = $_SERVER['SCRIPT_NAME'];
 
 // Убираем базовый путь из URL
 if (strpos($requestUri, $scriptName) === 0) {
