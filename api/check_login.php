@@ -1,5 +1,6 @@
 <?php
-require_once '../config/database.php';
+// Используем абсолютный путь
+require_once __DIR__ . '/../config/database.php';
 
 header('Content-Type: application/json; charset=utf-8');
 

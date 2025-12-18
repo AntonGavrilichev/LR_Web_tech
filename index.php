@@ -6,17 +6,31 @@ ini_set('log_errors', 1);
 ini_set('error_log', __DIR__ . '/logs/php_error.log');
 session_start();
 
-// Включаем отображение ошибок
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
-
-// === ВАЖНО: ПЕРВАЯ ПРОВЕРКА - СТАТИЧЕСКИЕ ФАЙЛЫ ===
 $requestUri = $_SERVER['REQUEST_URI'];
-$scriptName = $_SERVER['SCRIPT_NAME'];
+$scriptName = $_SERVER['SCRIPT_NAME']; // <-- ПЕРЕМЕСТИ ЭТО СЮДА!
+error_log("=== REQUEST START: $requestUri ===");
 
-// Если запрос идет к статическому файлу - обрабатываем сразу
+// === ВАЖНО: ПЕРВАЯ ПРОВЕРКА - API ЗАПРОСЫ ===
+if (strpos($requestUri, '/api/') === 0) {
+    error_log("API REQUEST DETECTED: $requestUri");
+
+    // Правильный путь к API файлу
+    $apiFilePath = __DIR__ . $requestUri;
+    error_log("Looking for API file: $apiFilePath");
+
+    if (file_exists($apiFilePath) && is_file($apiFilePath)) {
+        error_log("API file found, executing...");
+        require_once $apiFilePath;
+        exit; // Важно! Завершаем выполнение
+    } else {
+        error_log("API file NOT FOUND: $apiFilePath");
+        // Если файл не найден, продолжаем обычную обработку
+    }
+}
+// === КОНЕЦ ПРОВЕРКИ API ЗАПРОСОВ ===
+
+// === ВТОРАЯ ПРОВЕРКА - СТАТИЧЕСКИЕ ФАЙЛЫ ===
 if (preg_match('/\.(jpg|jpeg|png|gif|webp|ico|svg|css|js)$/i', $requestUri)) {
-    // Убираем параметры запроса если есть
     $cleanUri = strtok($requestUri, '?');
     $filePath = __DIR__ . $cleanUri;
 
@@ -50,7 +64,7 @@ if (preg_match('/\.(jpg|jpeg|png|gif|webp|ico|svg|css|js)$/i', $requestUri)) {
 // === КОНЕЦ ПРОВЕРКИ СТАТИЧЕСКИХ ФАЙЛОВ ===
 
 // Определяем базовый путь
-$basePath = dirname($_SERVER['SCRIPT_NAME']);
+$basePath = dirname($scriptName); // <-- Теперь $scriptName определена
 if ($basePath == '/') {
     $basePath = '';
 }
@@ -87,7 +101,6 @@ spl_autoload_register(function($className) {
         }
     }
 
-    // Если класс не найден
     die("Класс $className не найден");
 });
 
