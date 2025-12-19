@@ -1,5 +1,5 @@
 <?php
-class UserModel {
+class UserModel extends BaseActiveRecord {
     private $db;
     private $table = 'users';
 
