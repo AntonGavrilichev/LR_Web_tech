@@ -1,6 +1,6 @@
 <?php
 
-class BlogModel
+class BlogModel extends Model
 {
     private $db;
 
