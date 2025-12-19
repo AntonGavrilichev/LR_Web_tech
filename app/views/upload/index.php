@@ -140,12 +140,12 @@
                                 <?= $backup['modified'] ?>
                             </td>
                             <td style="padding: 12px;">
-                                <a href="/upload/downloadBackup/<?= urlencode($backup['name']) ?>"
+                                <a href="/upload/downloadBackup?filename=<?= urlencode($backup['name']) ?>"
                                    style="display: inline-flex; align-items: center; background: #17a2b8; color: white; padding: 6px 12px; border-radius: 3px; text-decoration: none; margin-right: 5px; font-size: 14px;">
                                     <i class="fas fa-download" style="margin-right: 5px;"></i> Скачать
                                 </a>
-                                <a href="/upload/restoreBackup/<?= urlencode($backup['name']) ?>"
-                                   onclick="return confirm('Вы уверены, что хотите восстановить эту резервную копию? Текущий файл будет заменен.')"
+                                <a href="/upload/restoreBackup?filename=<?= urlencode($backup['name']) ?>"
+                                   onclick="return confirm('Вы уверены, что хотите восстановить резервную копию \"<?= htmlspecialchars($backup['name']) ?>\"? Текущий файл messages.inc будет заменен.')"
                                    style="display: inline-flex; align-items: center; background: #ffc107; color: #212529; padding: 6px 12px; border-radius: 3px; text-decoration: none; font-size: 14px;">
                                     <i class="fas fa-redo" style="margin-right: 5px;"></i> Восстановить
                                 </a>

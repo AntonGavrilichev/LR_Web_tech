@@ -31,10 +31,29 @@ class UploadController extends Controller {
         exit();
     }
 
-    public function downloadBackup($filename) {
-        $filepath = 'backup/' . basename($filename);
+    public function downloadBackup() {
+        // Получаем имя файла из GET-параметра
+        $filename = $_GET['filename'] ?? '';
 
-        if (file_exists($filepath) && pathinfo($filepath, PATHINFO_EXTENSION) === 'inc') {
+        if (empty($filename)) {
+            // Если файл не указан, показываем список
+            header('Location: /upload');
+            exit();
+        }
+
+        // Безопасная проверка имени файла
+        $filename = basename($filename);
+        $filepath = 'backup/' . $filename;
+
+        // Проверяем, что файл существует и имеет правильное расширение
+        $allowedExtensions = ['inc', 'txt', 'bak'];
+        $extension = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+
+        if (file_exists($filepath) &&
+            is_file($filepath) &&
+            in_array($extension, $allowedExtensions)) {
+
+            // Устанавливаем заголовки для скачивания
             header('Content-Description: File Transfer');
             header('Content-Type: application/octet-stream');
             header('Content-Disposition: attachment; filename="' . basename($filepath) . '"');
@@ -42,21 +61,53 @@ class UploadController extends Controller {
             header('Cache-Control: must-revalidate');
             header('Pragma: public');
             header('Content-Length: ' . filesize($filepath));
+
+            // Очищаем буфер вывода
+            if (ob_get_level()) {
+                ob_end_clean();
+            }
+
             readfile($filepath);
             exit();
         } else {
+            // Если файл не найден, перенаправляем с сообщением об ошибке
+            $_SESSION['upload_result'] = [
+                'success' => false,
+                'message' => 'Файл резервной копии не найден: ' . htmlspecialchars($filename)
+            ];
             header('Location: /upload');
             exit();
         }
     }
 
-    public function restoreBackup($filename) {
+    public function restoreBackup() {
         $this->loadModel('UploadModel');
 
-        $backupPath = 'backup/' . basename($filename);
+        // Получаем имя файла из GET-параметра
+        $filename = $_GET['filename'] ?? '';
+
+        if (empty($filename)) {
+            $_SESSION['upload_result'] = [
+                'success' => false,
+                'message' => 'Не указано имя файла для восстановления'
+            ];
+            header('Location: /upload');
+            exit();
+        }
+
+        // Безопасная обработка имени файла
+        $filename = basename($filename);
+        $backupPath = 'backup/' . $filename;
         $targetFile = 'messages.inc';
 
-        if (file_exists($backupPath) && pathinfo($backupPath, PATHINFO_EXTENSION) === 'inc') {
+        // Проверяем расширение файла
+        $allowedExtensions = ['inc', 'txt', 'bak'];
+        $extension = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+
+        if (file_exists($backupPath) &&
+            is_file($backupPath) &&
+            in_array($extension, $allowedExtensions)) {
+
             // Создаем резервную копию текущего файла
             if (file_exists($targetFile)) {
                 $currentBackup = 'backup/messages_before_restore_' . date('Y-m-d_His') . '.inc';
@@ -67,11 +118,11 @@ class UploadController extends Controller {
             if (copy($backupPath, $targetFile)) {
                 $_SESSION['upload_result'] = [
                     'success' => true,
-                    'message' => 'Файл успешно восстановлен из резервной копии'
+                    'message' => 'Файл успешно восстановлен из резервной копии: ' . htmlspecialchars($filename)
                 ];
 
                 // Логируем восстановление
-                $logMessage = date('Y-m-d H:i:s') . " | Восстановлен файл из резервной копии: " . basename($backupPath) . PHP_EOL;
+                $logMessage = date('Y-m-d H:i:s') . " | Восстановлен файл из резервной копии: " . $filename . PHP_EOL;
                 if (!is_dir('logs')) {
                     mkdir('logs', 0755, true);
                 }
@@ -79,9 +130,14 @@ class UploadController extends Controller {
             } else {
                 $_SESSION['upload_result'] = [
                     'success' => false,
-                    'message' => 'Ошибка при восстановлении файла'
+                    'message' => 'Ошибка при восстановлении файла из резервной копии'
                 ];
             }
+        } else {
+            $_SESSION['upload_result'] = [
+                'success' => false,
+                'message' => 'Резервная копия не найдена или имеет недопустимое расширение: ' . htmlspecialchars($filename)
+            ];
         }
 
         header('Location: /upload');
