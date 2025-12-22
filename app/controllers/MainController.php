@@ -4,7 +4,7 @@ class MainController extends Controller {
         $data = [
             'title' => 'Главная страница',
             'pageTitle' => 'Персональный сайт - Главная страница',
-            'fullName' => 'Гавриличев Антон Александрович',
+            'fullName' => 'Ячменев Алексей Анатольевич',
             'group' => 'ИСб-22-1-з',
             'photo' => 'photos/SevSu.jpg'
         ];
